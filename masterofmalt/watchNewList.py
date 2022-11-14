@@ -20,9 +20,12 @@ m_driver = webdriver.Chrome(config['chrome']['enginePath'])
 m_productIDs = ""
 
 SENTLIST = []
-KEYS = ["tamdhu", "springbank","kilkerran","longrow","hazelburn"]
 
 logging.basicConfig(filename="example.log", level=logging.INFO)
+def parseWatchingNewProductList():
+    global m_keys 
+    m_keys = config['newProducts']['names'].split('&')
+    logging.info("watching New Product List : " + str(m_keys))
 
 def login():
     m_driver.get("https://www.masterofmalt.com")
@@ -71,7 +74,7 @@ def checkProductInfoes(jsonString):
     products = jsonData['products']
     logging.info("products info : " + str(products))
     for item in products:
-        for key in KEYS :
+        for key in m_keys :
             prodID = item['productID']
             prodName = item['name'].lower()
             avab =  item['available']
@@ -97,6 +100,7 @@ def sendMessage(text, sendCount):
 
 if __name__ == "__main__":
     login()
+    parseWatchingNewProductList()
     m_driver.get(NEW_ARRIVAL_ADDRESS)
     while True:
         try:
