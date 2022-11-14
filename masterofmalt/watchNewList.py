@@ -12,9 +12,9 @@ NEW_ARRIVAL_ADDRESS = "https://www.masterofmalt.com/new-arrivals/whisky-new-arri
 TRACKING_ADDRESS = "https://www.masterofmalt.com/api/data/productstracking/"
 
 config = ConfigParser()
-config.load('masterofmalt.ini')
 SLACK_TOKEN = config['slack']['token']
 SLACK_CHANNEL = config['slack']['channel']
+config.read('masterofmalt.ini')
 
 m_driver = webdriver.Chrome(config['chrome']['enginePath'])
 m_productIDs = ""
