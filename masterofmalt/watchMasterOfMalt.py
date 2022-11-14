@@ -3,6 +3,7 @@ from threading import Thread
 import requests
 import time
 import json
+from configparser import ConfigParser
 
 WATCHDOG_PATH = os.getcwd() + '/watchMOMDog.sh'
 ITEMJSON_PATH = os.getcwd() + '/masterofmalt.json'
@@ -10,9 +11,11 @@ COOKIE_FILE_PATH = os.getcwd() + '/cookie'
 HEADERS = {'Content-Type':'application/json','User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36'}
     
 BASE_URL = 'https://www.masterofmalt.com/api/data/productstracking/'
-SLACK_TOKEN = 'xoxb-3757170969008-3733436270578-3bezVKEu45AKeFubeTMbNhaP'
-SLACK_CHANNEL = '#masterofmalts'
-#SLACK_CHANNEL = '#test'
+
+config = ConfigParser()
+config.load('masterofmalt.ini')
+SLACK_TOKEN = config['slack']['token']
+SLACK_CHANNEL = config['slack']['channel']
 
 # ========================================================= #
 #                    JSON Object struct                     #
