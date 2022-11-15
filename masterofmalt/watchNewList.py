@@ -12,16 +12,16 @@ NEW_ARRIVAL_ADDRESS = "https://www.masterofmalt.com/new-arrivals/whisky-new-arri
 TRACKING_ADDRESS = "https://www.masterofmalt.com/api/data/productstracking/"
 
 config = ConfigParser()
-SLACK_TOKEN = config['slack']['token']
-SLACK_CHANNEL = config['slack']['channel']
 config.read('masterofmalt.ini')
+
+logging.basicConfig(filename="masterofmalts.log", level=logging.INFO)
 
 m_driver = webdriver.Chrome(config['chrome']['enginePath'])
 m_productIDs = ""
 
-SENTLIST = []
-
 logging.basicConfig(filename="example.log", level=logging.INFO)
+m_sentList = []
+
 def parseWatchingNewProductList():
     global m_keys 
     m_keys = config['newProducts']['names'].split('&')
@@ -35,7 +35,7 @@ def login():
     time.sleep(5)
     m_driver.get("https://www.masterofmalt.com/#context-login")
     time.sleep(5)
-    m_driver.execute_script('txtLoginEmail.value=\"trghyunwoo@gmail.com\";txtLoginPassword.value=\"rhgusdn0919@\";document.getElementById(\'MOMBuyButton\').click();')
+    m_driver.execute_script('txtLoginEmail.value=\"' + config['user']['ID'] + '\";txtLoginPassword.value=\"' + config['user']['passwd'] + '\";document.getElementById(\'MOMBuyButton\').click();')
     time.sleep(5)
 
 def refreshAndGetProductIds():    
@@ -78,22 +78,22 @@ def checkProductInfoes(jsonString):
             prodID = item['productID']
             prodName = item['name'].lower()
             avab =  item['available']
-            if (avab == True and key in prodName and prodID not in SENTLIST):
+            if (avab == True and key in prodName and prodID not in m_sentList):
                 text = "###### NEW STOCK ######\n"
                 text = text + item['name'] + " Arrived !!\n"
                 text = text + "https://www.masterofmalt.com/checkout/"
                 print("send target item incomed message")
                 sendMessage(text,5)
                 m_driver.execute_script('AddToBasket(' + str(prodID) + ')')
-                SENTLIST.append(item['productID'])
+                m_sentList.append(item['productID'])
                 
 
 def sendMessage(text, sendCount):
     try:
         for i in range(1,sendCount):
             requests.post("https://slack.com/api/chat.postMessage",
-            headers={"Authorization": "Bearer "+SLACK_TOKEN},
-            data={"channel": SLACK_CHANNEL,"text": text})
+            headers={"Authorization": "Bearer "+ config['slack']['token']},
+            data={"channel": '#' + config['slack']['channel'],"text": text})
             time.sleep(1)
     except:
         logging.error("### error occur during sendMessage. msg : " + text)
