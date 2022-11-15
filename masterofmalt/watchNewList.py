@@ -102,13 +102,16 @@ if __name__ == "__main__":
     login()
     parseWatchingNewProductList()
     m_driver.get(NEW_ARRIVAL_ADDRESS)
+    watchingSpan = int(config['etc']['watchingSpan'])
+    watchCount = 0
     while True:
+        if watchCount % watchingSpan == 0:
+            sendMessage("### still watching ###", 2)
         try:
             idString = refreshAndGetProductIds()
         except:
             sendMessage("### Error occur during get New Products", 2)
         if (m_productIDs != idString) :
-            logging.info("Check Item")
             sendMessage("### New Item Arrived, Check New List ###", 2)
             m_productIDs = idString
             try:
@@ -119,4 +122,5 @@ if __name__ == "__main__":
                 checkProductInfoes(jsonString)
             except:
                 sendMessage("### Error occur during parsing Product info", 2)
-        time.sleep(random.randrange(30,60))
+        watchCount = watchCount + 1
+        time.sleep(random.randrange(20,40))
