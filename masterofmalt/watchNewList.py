@@ -15,12 +15,13 @@ config = ConfigParser()
 config.read('masterofmalt.ini')
 
 logging.basicConfig(filename="masterofmalts.log", level=logging.INFO)
+
 m_driver = webdriver.Chrome(config['chrome']['enginePath'])
 m_productIDs = ""
 
-SENTLIST = []
-
 logging.basicConfig(filename="example.log", level=logging.INFO)
+m_sentList = []
+
 def parseWatchingNewProductList():
     global m_keys 
     m_keys = config['newProducts']['names'].split('&')
@@ -77,14 +78,14 @@ def checkProductInfoes(jsonString):
             prodID = item['productID']
             prodName = item['name'].lower()
             avab =  item['available']
-            if (avab == True and key in prodName and prodID not in SENTLIST):
+            if (avab == True and key in prodName and prodID not in m_sentList):
                 text = "###### NEW STOCK ######\n"
                 text = text + item['name'] + " Arrived !!\n"
                 text = text + "https://www.masterofmalt.com/checkout/"
                 print("send target item incomed message")
                 sendMessage(text,5)
                 m_driver.execute_script('AddToBasket(' + str(prodID) + ')')
-                SENTLIST.append(item['productID'])
+                m_sentList.append(item['productID'])
                 
 
 def sendMessage(text, sendCount):
