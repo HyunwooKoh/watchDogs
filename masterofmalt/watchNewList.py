@@ -34,7 +34,7 @@ def login():
     time.sleep(5)
     m_driver.get("https://www.masterofmalt.com/#context-login")
     time.sleep(5)
-    m_driver.execute_script('txtLoginEmail.value=\"trghyunwoo@gmail.com\";txtLoginPassword.value=\"rhgusdn0919@\";document.getElementById(\'MOMBuyButton\').click();')
+    m_driver.execute_script('txtLoginEmail.value=\"' + config['user']['ID'] + '\";txtLoginPassword.value=\"' + config['user']['passwd'] + '\";document.getElementById(\'MOMBuyButton\').click();')
     time.sleep(5)
 
 def refreshAndGetProductIds():    
