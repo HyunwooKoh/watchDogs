@@ -14,6 +14,7 @@ TRACKING_ADDRESS = "https://www.masterofmalt.com/api/data/productstracking/"
 config = ConfigParser()
 config.read('masterofmalt.ini')
 
+logging.basicConfig(filename="masterofmalts.log", level=logging.INFO)
 m_driver = webdriver.Chrome(config['chrome']['enginePath'])
 m_productIDs = ""
 
