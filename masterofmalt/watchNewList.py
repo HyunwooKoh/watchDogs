@@ -12,8 +12,6 @@ NEW_ARRIVAL_ADDRESS = "https://www.masterofmalt.com/new-arrivals/whisky-new-arri
 TRACKING_ADDRESS = "https://www.masterofmalt.com/api/data/productstracking/"
 
 config = ConfigParser()
-SLACK_TOKEN = config['slack']['token']
-SLACK_CHANNEL = config['slack']['channel']
 config.read('masterofmalt.ini')
 
 m_driver = webdriver.Chrome(config['chrome']['enginePath'])
@@ -92,8 +90,8 @@ def sendMessage(text, sendCount):
     try:
         for i in range(1,sendCount):
             requests.post("https://slack.com/api/chat.postMessage",
-            headers={"Authorization": "Bearer "+SLACK_TOKEN},
-            data={"channel": SLACK_CHANNEL,"text": text})
+            headers={"Authorization": "Bearer "+ config['slack']['token']},
+            data={"channel": '#' + config['slack']['channel'],"text": text})
             time.sleep(1)
     except:
         logging.error("### error occur during sendMessage. msg : " + text)
