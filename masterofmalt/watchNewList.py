@@ -125,10 +125,13 @@ if __name__ == "__main__":
     while True:
         if watchCount % watchingSpan == 0:
             sendMessage("### still watching ###", 2)
+        
         try:
             idString = refreshAndGetProductIds()
         except:
             sendMessage("### Error occur during get New Products", 2)
+            reCreateWebObj()
+        
         if (m_productIDs != idString) :
             sendMessage("### New Item Arrived, Check New List ###", 2)
             m_productIDs = idString
@@ -136,9 +139,12 @@ if __name__ == "__main__":
                 jsonString = getProductInfoes(m_productIDs)
             except:
                 sendMessage("### Error occur during get Product info", 2)
+                reCreateWebObj()
             try:
                 checkProductInfoes(jsonString)
             except:
                 sendMessage("### Error occur during parsing Product info", 2)
+                reCreateWebObj()
+        
         watchCount = watchCount + 1
         time.sleep(random.randrange(20,40))
