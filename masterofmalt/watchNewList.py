@@ -147,4 +147,4 @@ if __name__ == "__main__":
                 reCreateWebObj()
         
         watchCount = watchCount + 1
-        time.sleep(random.randrange(20,40))
+        time.sleep(random.randrange(30,60))
