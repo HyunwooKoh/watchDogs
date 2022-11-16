@@ -16,7 +16,6 @@ config.read('masterofmalt.ini')
 
 logging.basicConfig(filename="masterofmalts.log", level=logging.INFO)
 
-m_driver = webdriver.Chrome(config['chrome']['enginePath'])
 m_productIDs = ""
 
 logging.basicConfig(filename="example.log", level=logging.INFO)
