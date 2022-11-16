@@ -16,7 +16,6 @@ config.read('masterofmalt.ini')
 
 logging.basicConfig(filename="masterofmalts.log", level=logging.INFO)
 
-m_driver = webdriver.Chrome(config['chrome']['enginePath'])
 m_productIDs = ""
 
 logging.basicConfig(filename="example.log", level=logging.INFO)
@@ -98,19 +97,41 @@ def sendMessage(text, sendCount):
     except:
         logging.error("### error occur during sendMessage. msg : " + text)
 
-if __name__ == "__main__":
+
+def reCreateWebObj():
+    m_driver.close()
+    time.sleep(5)
+    sendMessage('### Sleep 10 Min to reopen webPage ###',2)
+    time.sleep(30000)
+    webObjInit()
+
+
+def createWebObj():
+    global m_driver
+    m_driver = webdriver.Chrome(config['chrome']['enginePath'])
+
+
+def webObjInit():
+    createWebObj()
     login()
-    parseWatchingNewProductList()
     m_driver.get(NEW_ARRIVAL_ADDRESS)
+    
+
+if __name__ == "__main__":
+    parseWatchingNewProductList()
+    webObjInit()
     watchingSpan = int(config['etc']['watchingSpan'])
     watchCount = 0
     while True:
         if watchCount % watchingSpan == 0:
             sendMessage("### still watching ###", 2)
+        
         try:
             idString = refreshAndGetProductIds()
         except:
             sendMessage("### Error occur during get New Products", 2)
+            reCreateWebObj()
+        
         if (m_productIDs != idString) :
             sendMessage("### New Item Arrived, Check New List ###", 2)
             m_productIDs = idString
@@ -118,9 +139,12 @@ if __name__ == "__main__":
                 jsonString = getProductInfoes(m_productIDs)
             except:
                 sendMessage("### Error occur during get Product info", 2)
+                reCreateWebObj()
             try:
                 checkProductInfoes(jsonString)
             except:
                 sendMessage("### Error occur during parsing Product info", 2)
+                reCreateWebObj()
+        
         watchCount = watchCount + 1
-        time.sleep(random.randrange(20,40))
+        time.sleep(random.randrange(30,60))
