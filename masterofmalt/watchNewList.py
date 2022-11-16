@@ -98,10 +98,29 @@ def sendMessage(text, sendCount):
     except:
         logging.error("### error occur during sendMessage. msg : " + text)
 
-if __name__ == "__main__":
+
+def reCreateWebObj():
+    m_driver.close()
+    time.sleep(5)
+    sendMessage('### Sleep 10 Min to reopen webPage ###',2)
+    time.sleep(30000)
+    webObjInit()
+
+
+def createWebObj():
+    global m_driver
+    m_driver = webdriver.Chrome(config['chrome']['enginePath'])
+
+
+def webObjInit():
+    createWebObj()
     login()
-    parseWatchingNewProductList()
     m_driver.get(NEW_ARRIVAL_ADDRESS)
+    
+
+if __name__ == "__main__":
+    parseWatchingNewProductList()
+    webObjInit()
     watchingSpan = int(config['etc']['watchingSpan'])
     watchCount = 0
     while True:
