@@ -102,7 +102,7 @@ def reCreateWebObj():
     m_driver.close()
     time.sleep(5)
     sendMessage('### Sleep 10 Min to reopen webPage ###',2)
-    time.sleep(30000)
+    time.sleep(600)
     webObjInit()
 
 
