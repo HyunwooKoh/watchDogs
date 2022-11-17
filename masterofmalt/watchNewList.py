@@ -16,15 +16,30 @@ config.read('masterofmalt.ini')
 
 logging.basicConfig(filename="masterofmalts.log", level=logging.INFO)
 
-m_productIDs = ""
+m_lastNewProductIDs = ""
 
 logging.basicConfig(filename="example.log", level=logging.INFO)
 m_sentList = []
 
-def parseWatchingNewProductList():
-    global m_keys 
-    m_keys = config['newProducts']['names'].split('&')
-    logging.info("watching New Product List : " + str(m_keys))
+# ----- Web Obect Control ----- #
+def createWebObj():
+    global m_driver
+    m_driver = webdriver.Chrome(config['chrome']['enginePath'])
+
+
+def webObjInit():
+    createWebObj()
+    #login()
+    m_driver.get(NEW_ARRIVAL_ADDRESS)
+    
+
+def reCreateWebObj():
+    m_driver.close()
+    time.sleep(5)
+    sendMessage('### Sleep 10 Min to reopen webPage ###',2)
+    time.sleep(600)
+    webObjInit()
+
 
 def login():
     m_driver.get("https://www.masterofmalt.com")
@@ -37,8 +52,10 @@ def login():
     m_driver.execute_script('txtLoginEmail.value=\"' + config['user']['ID'] + '\";txtLoginPassword.value=\"' + config['user']['passwd'] + '\";document.getElementById(\'MOMBuyButton\').click();')
     time.sleep(5)
 
-def refreshAndGetProductIds():    
-    logging.info("Refresh page")
+
+# ----- New Arrive Products Manage ----- #
+def refreshAndGetNewProductIds():    
+    logging.info("Refresh page\n")
     m_driver.refresh()
     m_driver.implicitly_wait(2)
     idString = ""
@@ -47,7 +64,6 @@ def refreshAndGetProductIds():
         if ("productIDs" in data):
             result = data['productIDs']
             idString = ','.join(map(str, result))
-    logging.info("IdString : " + idString)
     return idString
 
 
@@ -68,25 +84,45 @@ def getProductInfoes(idString):
     return retString
 
 
+# ----- Data Parsing ----- #
+def parseNewProductKeys():
+    global m_keys 
+    m_keys = config['newProducts']['names'].split('&')
+    logging.info("watching New Product List : " + str(m_keys))
+
+
+def parseWachingListProducts():
+    global m_watchList
+    m_watchList = ""
+    
+    with open(os.getcwd() + '/masterofmalt.json', 'r', encoding='UTF8') as jsonFile:
+        itemData = json.load(jsonFile)
+        for item in itemData['itemList']:
+            m_watchList = m_watchList + item['code'] + ','
+        m_watchList = m_watchList[:-1]
+    print(m_watchList + "\n")
+    logging.info("m_watchList : " + m_watchList)
+
+
 def checkProductInfoes(jsonString):
+    print(jsonString)
     jsonData = json.loads(jsonString)
     products = jsonData['products']
-    logging.info("products info : " + str(products))
     for item in products:
-        for key in m_keys :
-            prodID = item['productID']
-            prodName = item['name'].lower()
-            avab =  item['available']
-            if (avab == True and key in prodName and prodID not in m_sentList):
-                text = "###### NEW STOCK ######\n"
-                text = text + item['name'] + " Arrived !!\n"
-                text = text + "https://www.masterofmalt.com/checkout/"
-                print("send target item incomed message")
-                sendMessage(text,5)
-                m_driver.execute_script('AddToBasket(' + str(prodID) + ')')
-                m_sentList.append(item['productID'])
-                
+        prodId = item['productID']
+        prodName = item['name'].lower()
+        avab =  item['available']     
+        
+        if avab == True and prodId not in m_sentList:
+            if str(prodId) in m_lastNewProductIDs:
+                for key in m_keys :
+                    if (key in prodName):
+                        sendStockAlarm(False, prodName, prodId)
+                    else:
+                        sendStockAlarm(True, prodName, prodId)
 
+
+# ----- Utills  ----- #
 def sendMessage(text, sendCount):
     try:
         for i in range(1,sendCount):
@@ -98,27 +134,27 @@ def sendMessage(text, sendCount):
         logging.error("### error occur during sendMessage. msg : " + text)
 
 
-def reCreateWebObj():
-    m_driver.close()
-    time.sleep(5)
-    sendMessage('### Sleep 10 Min to reopen webPage ###',2)
-    time.sleep(600)
-    webObjInit()
+def sendStockAlarm(reStock, name, prodId):
+    if reStock:
+        text = "###### Re-Stock ######\n"
+    else:
+        text = "###### NEW STOCK ######\n"
+    text = text + name + " Arrived !!\n"
+    text = text + "https://www.masterofmalt.com/checkout/"
+    print("send target item incomed message")
+    sendMessage(text,5)
+    m_driver.execute_script('AddToBasket(' + str(prodId) + ')')
+    m_sentList.append(prodId)
 
 
-def createWebObj():
-    global m_driver
-    m_driver = webdriver.Chrome(config['chrome']['enginePath'])
+# TODO
+# def resetSentList() : reset m_sentList in evry 24 hours.
+# def purchaseItemInBuske() : check out the users busket
 
-
-def webObjInit():
-    createWebObj()
-    login()
-    m_driver.get(NEW_ARRIVAL_ADDRESS)
-    
 
 if __name__ == "__main__":
-    parseWatchingNewProductList()
+    parseNewProductKeys()
+    parseWachingListProducts()
     webObjInit()
     watchingSpan = int(config['etc']['watchingSpan'])
     watchCount = 0
@@ -127,24 +163,23 @@ if __name__ == "__main__":
             sendMessage("### still watching ###", 2)
         
         try:
-            idString = refreshAndGetProductIds()
+            idString = refreshAndGetNewProductIds()
+            if (m_lastNewProductIDs != idString) :
+                sendMessage("### New Item Arrived, Check New List ###", 2)
+                m_lastNewProductIDs = idString
+                jsonString = getProductInfoes(idString)
+                logging.info('New Product IDs : ' + idString + '\n')
+                checkProductInfoes(jsonString)                
         except:
-            sendMessage("### Error occur during get New Products", 2)
+                sendMessage("### Error occur during get New Products info", 2)
+                reCreateWebObj()
+
+        try:
+            jsonString = getProductInfoes(m_watchList)
+            checkProductInfoes(jsonString)
+        except:
+            sendMessage("### Error occur during get watching products info", 2)
             reCreateWebObj()
-        
-        if (m_productIDs != idString) :
-            sendMessage("### New Item Arrived, Check New List ###", 2)
-            m_productIDs = idString
-            try:
-                jsonString = getProductInfoes(m_productIDs)
-            except:
-                sendMessage("### Error occur during get Product info", 2)
-                reCreateWebObj()
-            try:
-                checkProductInfoes(jsonString)
-            except:
-                sendMessage("### Error occur during parsing Product info", 2)
-                reCreateWebObj()
-        
+
         watchCount = watchCount + 1
         time.sleep(random.randrange(30,60))
