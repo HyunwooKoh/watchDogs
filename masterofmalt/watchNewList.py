@@ -157,9 +157,11 @@ if __name__ == "__main__":
     watchingSpan = int(config['etc']['watchingSpan'])
     watchCount = 0
     while True:
+        watchCount = watchCount + 1    
         if watchCount % watchingSpan == 0:
             sendMessage("### still watching ###", 2)
-        
+            watchCount = 0
+
         try:
             idString = refreshAndGetNewProductIds()
             if (m_lastNewProductIDs != idString) :
@@ -179,5 +181,4 @@ if __name__ == "__main__":
             sendMessage("### Error occur during get watching products info", 2)
             reCreateWebObj()
 
-        watchCount = watchCount + 1
         time.sleep(random.randrange(30,60))
