@@ -33,11 +33,11 @@ def webObjInit():
 
 def reCreateWebObj():
     m_driver.close()
-    time.sleep(5)
     sendMessage('### Sleep 10 Min to reopen webPage ###',2)
     time.sleep(600)
     webObjInit()
-
+    sendMessage('### reopen webPage ###',2)
+    
 
 def login():
     m_driver.get("https://www.masterofmalt.com")
