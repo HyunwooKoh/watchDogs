@@ -21,6 +21,25 @@ m_lastNewProductIDs = ""
 logging.basicConfig(filename="example.log", level=logging.INFO)
 m_sentList = []
 
+# ----- Web Obect Control ----- #
+def createWebObj():
+    global m_driver
+    m_driver = webdriver.Chrome(config['chrome']['enginePath'])
+
+
+def webObjInit():
+    createWebObj()
+    #login()
+    m_driver.get(NEW_ARRIVAL_ADDRESS)
+    
+
+def reCreateWebObj():
+    m_driver.close()
+    time.sleep(5)
+    sendMessage('### Sleep 10 Min to reopen webPage ###',2)
+    time.sleep(600)
+    webObjInit()
+
 
 def login():
     m_driver.get("https://www.masterofmalt.com")
@@ -33,8 +52,10 @@ def login():
     m_driver.execute_script('txtLoginEmail.value=\"' + config['user']['ID'] + '\";txtLoginPassword.value=\"' + config['user']['passwd'] + '\";document.getElementById(\'MOMBuyButton\').click();')
     time.sleep(5)
 
-def refreshAndGetProductIds():    
-    logging.info("Refresh page")
+
+# ----- New Arrive Products Manage ----- #
+def refreshAndGetNewProductIds():    
+    logging.info("Refresh page\n")
     m_driver.refresh()
     m_driver.implicitly_wait(2)
     idString = ""
@@ -43,7 +64,6 @@ def refreshAndGetProductIds():
         if ("productIDs" in data):
             result = data['productIDs']
             idString = ','.join(map(str, result))
-    logging.info("IdString : " + idString)
     return idString
 
 
@@ -82,6 +102,8 @@ def parseWachingListProducts():
         m_watchList = m_watchList[:-1]
     print(m_watchList + "\n")
     logging.info("m_watchList : " + m_watchList)
+
+
 def checkProductInfoes(jsonString):
     print(jsonString)
     jsonData = json.loads(jsonString)
@@ -99,6 +121,8 @@ def checkProductInfoes(jsonString):
                     else:
                         sendStockAlarm(True, prodName, prodId)
 
+
+# ----- Utills  ----- #
 def sendMessage(text, sendCount):
     try:
         for i in range(1,sendCount):
@@ -110,12 +134,6 @@ def sendMessage(text, sendCount):
         logging.error("### error occur during sendMessage. msg : " + text)
 
 
-def reCreateWebObj():
-    m_driver.close()
-    time.sleep(5)
-    sendMessage('### Sleep 10 Min to reopen webPage ###',2)
-    time.sleep(600)
-    webObjInit()
 def sendStockAlarm(reStock, name, prodId):
     if reStock:
         text = "###### Re-Stock ######\n"
@@ -129,16 +147,10 @@ def sendStockAlarm(reStock, name, prodId):
     m_sentList.append(prodId)
 
 
-def createWebObj():
-    global m_driver
-    m_driver = webdriver.Chrome(config['chrome']['enginePath'])
+# TODO
+# def resetSentList() : reset m_sentList in evry 24 hours.
+# def purchaseItemInBuske() : check out the users busket
 
-
-def webObjInit():
-    createWebObj()
-    login()
-    m_driver.get(NEW_ARRIVAL_ADDRESS)
-    
 
 if __name__ == "__main__":
     parseNewProductKeys()
