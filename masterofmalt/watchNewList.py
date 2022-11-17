@@ -103,7 +103,6 @@ def parseWachingListProducts():
 
 
 def checkProductInfoes(jsonString):
-    print(jsonString)
     jsonData = json.loads(jsonString)
     products = jsonData['products']
     for item in products:
@@ -116,8 +115,8 @@ def checkProductInfoes(jsonString):
                 for key in m_keys :
                     if (key in prodName):
                         sendStockAlarm(False, prodName, prodId)
-                    else:
-                        sendStockAlarm(True, prodName, prodId)
+            else:
+                sendStockAlarm(True, prodName, prodId)
 
 
 # ----- Utills  ----- #
