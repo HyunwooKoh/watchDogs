@@ -68,6 +68,17 @@ def getProductInfoes(idString):
     return retString
 
 
+def parseWachingListProducts():
+    global m_watchList
+    m_watchList = ""
+    
+    with open(os.getcwd() + '/masterofmalt.json', 'r', encoding='UTF8') as jsonFile:
+        itemData = json.load(jsonFile)
+        for item in itemData['itemList']:
+            m_watchList = m_watchList + item['code'] + ','
+        m_watchList = m_watchList[:-1]
+    print(m_watchList + "\n")
+    logging.info("m_watchList : " + m_watchList)
 def checkProductInfoes(jsonString):
     jsonData = json.loads(jsonString)
     products = jsonData['products']
@@ -119,6 +130,7 @@ def webObjInit():
 
 if __name__ == "__main__":
     parseWatchingNewProductList()
+    parseWachingListProducts()
     webObjInit()
     watchingSpan = int(config['etc']['watchingSpan'])
     watchCount = 0
