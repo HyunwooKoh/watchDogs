@@ -1,110 +1,36 @@
 {
-    "itemList" : [
-        {
-            "name" : "스뱅10",
-            "link" : "https://www.masterofmalt.com/whiskies/springbank/springbank-10-year-old-whisky/?srh=1",
-            "code" : "2593",
-            "reTryCount" : 0
-        },{
-            "name" : "스뱅12",
-            "link" : "https://www.masterofmalt.com/whiskies/springbank/springbank-12-year-old-cask-strength-55-9-whisky/?srh=1",
-            "code" : "112374",
-            "reTryCount" : 0
-        },{
-            "name" : "스뱅15",
-            "link" : "https://www.masterofmalt.com/whiskies/springbank-15-year-old-whisky/?srh=1",
-            "code" : "2595",
-            "reTryCount" : 0
-        },{
-            "name" : "스뱅18",
-            "link" : "https://www.masterofmalt.com/whiskies/springbank/springbank-18-year-old-whisky/?srh=1",
-            "code" : "4098",
-            "reTryCount" : 0
-        },{
-            "name" : "스뱅30",
-            "link" : "https://www.masterofmalt.com/whiskies/springbank/springbank-30-year-old-whisky/?srh=1",
-            "code" : "117712",
-            "reTryCount" : 0
-        },{
-            "name" : "햅번10",
-            "link" : "https://www.masterofmalt.com/whiskies/springbank/hazelburn-10-year-old-whisky/?srh=1",
-            "code" : "35189",
-            "reTryCount" : 0
-        },{
-            "name" : "햅번13",
-            "link" : "https://www.masterofmalt.com/whiskies/springbank/hazelburn-13-year-old-2007-whisky/?srh=1",
-            "code" : "109039",
-            "reTryCount" : 0
-        },{
-            "name" : "햅번13 올로로쏘",
-            "link" : "https://www.masterofmalt.com/whiskies/springbank/hazelburn-13-year-old-2007-oloroso-cask-matured-whisky/?srh=1",
-            "code" : "104485",
-            "reTryCount" : 0
-        },{
-            "name" : "햅번15",
-            "link" : "https://www.masterofmalt.com/whiskies/springbank/hazelburn-15-year-old-2006-oloroso-cask-whisky/?srh=1",
-            "code" : "117713",
-            "reTryCount" : 0
-        },{
-            "name" : "롱로우15",
-            "link" : "https://www.masterofmalt.com/whiskies/springbank/longrow-red-15-year-old-whisky/?srh=1",
-            "code" : "115518",
-            "reTryCount" : 0
-        },{
-            "name" : "킬커란16",
-            "link" : "https://www.masterofmalt.com/whiskies/kilkerran/kilkerran-16-year-old-whisky/?srh=1",
-            "code" : "104483",
-            "reTryCount" : 0
-        },{
-            "name" : "해피6",
-            "link" : "https://www.masterofmalt.com/whiskies/kilkerran/kilkerran-heavily-peated-batch-6-whisky/?srh=1",
-            "code" : "117715",
-            "reTryCount" : 0
-        },{
-            "name" : "해피5",
-            "link" : "https://www.masterofmalt.com/whiskies/kilkerran/kilkerran-heavily-peated-batch-no-5-whisky/?srh=1",
-            "code" : "113997",
-            "reTryCount" : 0
-        },{
-            "name" : "킬커란8CS 포트",
-            "link" : "https://www.masterofmalt.com/whiskies/kilkerran/kilkerran-8-year-old-cask-strength-port-cask-matured-whisky/?srh=1",
-            "code" : "115520",
-            "reTryCount" : 0
-        },{
-            "name" : "킬커란8CS 쉐리",
-            "link" : "https://www.masterofmalt.com/whiskies/kilkerran/kilkerran-8-year-old-cask-strength-sherry-cask-matured-whisky/?srh=1",
-            "code" : "115522",
-            "reTryCount" : 0
-        },{
-            "name" : "킬커란8CS",
-            "link" : "https://www.masterofmalt.com/whiskies/kilkerran/kilkerran-8-year-old-cask-strength-56-9-106466-whisky/?srh=1",
-            "code" : "106466",
-            "reTryCount" : 0
-        },{
-            "name" : "스코시아 몰페2021",
-            "link" : "https://www.masterofmalt.com/whiskies/glen-scotia/glen-scotia-10-year-old-campbeltown-matts-festival-2021-whisky/",
-            "code" : "108259",
-            "reTryCount" : 0
-        },{
-            "name" : "스코시아 몰페2022",
-            "link" : "https://www.masterofmalt.com/whiskies/glen-scotia/glen-scotia-8-year-old-campbeltown-malts-festival-2022-whisky/?srh=1",
-            "code" : "117351",
-            "reTryCount" : 0
-        },{
-            "name" : "캠벌타운 조니 몰트",
-            "link" : "https://www.masterofmalt.com/whiskies/hunter-laing/campbeltown-blended-malt-journey-series-hunter-laing-whisky/?srh=1",
-            "code" : "114248",
-            "reTryCount" : 0
-        },{
-            "name" : "캠벌타운 로크 몰트",
-            "link" : "https://www.masterofmalt.com/whiskies/j-and-a-mitchell/campbeltown-loch-blend-whisky/?srh=1",
-            "code" : "115242",
-            "reTryCount" : 0
-        },{
-            "name" : "캠벌타운 부띠끄 몰트 5Y",
-            "link" : "https://www.masterofmalt.com/whiskies/that-boutiquey-whisky-company/campbeltown-blended-malt-5-year-old-that-boutique-y-whisky-company-whisky/?srh=1",
-            "code" : "100953",
-            "reTryCount" : 0
-        }
-    ]
+    "itemList": [{
+        "name": "스뱅10",
+        "code": "2593"
+    },{
+        "name": "스뱅10 PX",
+        "code": "122029"
+    },{
+        "name": "스뱅12",
+        "code": "112374"
+    },{
+        "name": "스뱅15",
+        "code": "2595"
+    },{
+        "name": "스뱅18",
+        "code": "4098"
+    },{
+        "name": "햅번10",
+        "code": "35189"
+    },{
+        "name": "킬커란16",
+        "code": "104483"
+    },{
+        "name": "킬커란8CS 쉐리",
+        "code": "115522"
+    },{
+        "name": "롱로우 REd 11-port",
+        "code": "122030"
+    },{
+        "name": "롱로우 Red 15-pinor",
+        "code": "115518"
+    },{
+        "name": "롱로우18",
+        "code": "9976"
+    }]
 }
