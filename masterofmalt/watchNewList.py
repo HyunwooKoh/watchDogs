@@ -17,8 +17,6 @@ config.read('masterofmalt.ini')
 logging.basicConfig(filename="masterofmalts.log", level=logging.INFO)
 
 m_lastNewProductIDs = ""
-
-logging.basicConfig(filename="example.log", level=logging.INFO)
 m_sentList = []
 
 # ----- Web Obect Control ----- #
