@@ -27,7 +27,7 @@ def createWebObj():
 
 def webObjInit():
     createWebObj()
-    #login()
+    login()
     m_driver.get(NEW_ARRIVAL_ADDRESS)
     
 
