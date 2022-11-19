@@ -137,7 +137,7 @@ def sendStockAlarm(reStock, name, prodId):
     else:
         text = "###### NEW STOCK ######\n"
     text = text + name + " Arrived !!\n"
-    text = text + "https://www.masterofmalt.com/checkout/"
+    text = text + "https://www.masterofmalt.com/s/?q=" + name + "&size=n_25_n"
     print("send target item incomed message")
     sendMessage(text,5)
     m_driver.execute_script('AddToBasket(' + str(prodId) + ')')
