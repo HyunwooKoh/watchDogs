@@ -3,9 +3,10 @@ import os
 import requests
 import time
 import json
-from selenium import webdriver
+import schedule
 import logging
 from configparser import ConfigParser
+from selenium import webdriver
 
 HEADERS = {'Content-Type':'application/json','User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36'}
 NEW_ARRIVAL_ADDRESS = "https://www.masterofmalt.com/new-arrivals/whisky-new-arrivals/"
@@ -144,8 +145,12 @@ def sendStockAlarm(reStock, name, prodId):
     m_sentList.append(prodId)
 
 
+def resetSentList() :
+    m_sentList.clear()
+    sendMessage("### Reset sent list ###",2)
+
+
 # TODO
-# def resetSentList() : reset m_sentList in evry 24 hours.
 # def purchaseItemInBuske() : check out the users busket
 
 
@@ -153,8 +158,13 @@ if __name__ == "__main__":
     parseNewProductKeys()
     parseWachingListProducts()
     webObjInit()
+
     watchingSpan = int(config['etc']['watchingSpan'])
     watchCount = 0
+    
+    schedule.every().day.at("09:00").do(resetSentList)
+    schedule.run_pending()
+    
     while True:
         watchCount = watchCount + 1    
         if watchCount % watchingSpan == 0:
