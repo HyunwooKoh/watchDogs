@@ -12,9 +12,9 @@ NEW_ARRIVAL_ADDRESS = "https://www.masterofmalt.com/new-arrivals/whisky-new-arri
 TRACKING_ADDRESS = "https://www.masterofmalt.com/api/data/productstracking/"
 
 config = ConfigParser()
-config.read('masterofmalt.ini')
+config.read('masterOfMalts.ini')
 
-logging.basicConfig(filename="masterofmalts.log", level=logging.INFO)
+logging.basicConfig(filename="masterOfMalts.log", level=logging.INFO)
 
 m_lastNewProductIDs = ""
 m_sentList = []
@@ -93,7 +93,7 @@ def parseWachingListProducts():
     global m_watchList
     m_watchList = ""
     
-    with open(os.getcwd() + '/masterofmalt.json', 'r', encoding='UTF8') as jsonFile:
+    with open(os.getcwd() + '/masterOfMalts.json', 'r', encoding='UTF8') as jsonFile:
         itemData = json.load(jsonFile)
         for item in itemData['itemList']:
             m_watchList = m_watchList + item['code'] + ','
