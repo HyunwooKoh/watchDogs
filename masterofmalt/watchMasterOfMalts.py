@@ -60,7 +60,7 @@ def login():
 def refreshAndGetNewProductIds():    
     logging.info("Refresh page\n")
     m_driver.refresh()
-    m_driver.implicitly_wait(2)
+    m_driver.implicitly_wait(15)
     idString = ""
     dataLayer = m_driver.execute_script('var iDs = window.dataLayer; return iDs')
     for data in dataLayer:
