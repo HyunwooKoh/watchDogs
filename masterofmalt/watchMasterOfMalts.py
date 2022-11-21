@@ -23,7 +23,11 @@ m_sentList = []
 # ----- Web Obect Control ----- #
 def createWebObj():
     global m_driver
-    m_driver = webdriver.Chrome(config['chrome']['enginePath'])
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument('--disable-dev-shm-usage')
+    m_driver = webdriver.Chrome(config['chrome']['enginePath'], chrome_options=chrome_options)
 
 
 def webObjInit():
