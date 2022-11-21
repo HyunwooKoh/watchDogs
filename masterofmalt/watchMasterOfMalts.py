@@ -67,6 +67,7 @@ def refreshAndGetNewProductIds():
         if ("productIDs" in data):
             result = data['productIDs']
             idString = ','.join(map(str, result))
+    logging.info("refreshed idString : " + idString)    
     return idString
 
 
@@ -103,7 +104,6 @@ def parseWachingListProducts():
         for item in itemData['itemList']:
             m_watchList = m_watchList + item['code'] + ','
         m_watchList = m_watchList[:-1]
-    print(m_watchList + "\n")
     logging.info("m_watchList : " + m_watchList)
 
 
