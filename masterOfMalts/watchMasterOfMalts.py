@@ -23,8 +23,6 @@ logging.basicConfig(filename="masterOfMalts.log", level=logging.INFO)
 
 m_lastNewProductIDs = ""
 m_sentList = []
-m_keys = []
-m_watchList = ""
 
 # ------ Error Code ------- #
 INVALID_WATCH_TARGET = -100
@@ -109,8 +107,10 @@ def getProductInfoes(idString):
 
 # ----- Data Parsing ----- #
 def parseNewProductKeys():
-    m_keys = config['newProducts']['names'].split('&')
-    logging.info("watching New Product List : " + str(m_keys))
+    global m_newItmeKeys 
+    m_newItmeKeys = config['newProducts']['names'].split('&')
+    logging.info("watching New Product List : " + str(m_newItmeKeys))
+
 
 def parseUserAuthData():
     global m_userInfoes
@@ -131,7 +131,8 @@ def parseUserAuthData():
 
 
 def parseWachingListProducts():
-    
+    global m_watchList
+    m_watchList = ""
     with open(os.getcwd() + '/masterOfMalts.json', 'r', encoding='UTF8') as jsonFile:
         itemData = json.load(jsonFile)
         for item in itemData['itemList']:
@@ -150,7 +151,7 @@ def checkProductInfoes(jsonString):
         
         if avab == True and prodId not in m_sentList:
             if str(prodId) in m_lastNewProductIDs:
-                for key in m_keys :
+                for key in m_newItmeKeys :
                     if (key in prodName):
                         sendStockAlarm(False, prodName, prodId)
             else:
