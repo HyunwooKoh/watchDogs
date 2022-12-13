@@ -19,6 +19,9 @@ logging.basicConfig(filename="masterOfMalts.log", level=logging.INFO)
 
 m_lastNewProductIDs = ""
 m_sentList = []
+m_keys = []
+m_watchList = ""
+
 
 # ----- Web Obect Control ----- #
 def createWebObj():
@@ -90,14 +93,11 @@ def getProductInfoes(idString):
 
 # ----- Data Parsing ----- #
 def parseNewProductKeys():
-    global m_keys 
     m_keys = config['newProducts']['names'].split('&')
     logging.info("watching New Product List : " + str(m_keys))
 
 
 def parseWachingListProducts():
-    global m_watchList
-    m_watchList = ""
     
     with open(os.getcwd() + '/masterOfMalts.json', 'r', encoding='UTF8') as jsonFile:
         itemData = json.load(jsonFile)
