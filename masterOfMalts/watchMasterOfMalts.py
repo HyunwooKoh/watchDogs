@@ -26,6 +26,9 @@ m_sentList = []
 m_keys = []
 m_watchList = ""
 
+# ------ Error Code ------- #
+INVALID_WATCH_TARGET = -100
+INVALID_USER_INFO = -200
 
 # ------ Data Structure ------ # 
 @dataclass 
@@ -189,9 +192,19 @@ def resetSentList() :
 
 
 if __name__ == "__main__":
+
     parseNewProductKeys()
     parseWachingListProducts()
+    if len(m_watchList) == 0 and len(m_newItmeKeys) == 0 :
+        print("ERROR: Threr is no item to watch!")
+        exit(INVALID_WATCH_TARGET)
+    
     parseUserAuthData()
+    print(m_userInfoes)
+    if len(m_userInfoes) == 0 :
+        print("ERROR: There is no user info to use")
+        exit(INVALID_USER_INFO)
+    
     webObjInit()
 
     watchingSpan = int(config['etc']['watchingSpan'])
