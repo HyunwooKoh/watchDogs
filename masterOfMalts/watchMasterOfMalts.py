@@ -34,7 +34,7 @@ class userInfo:
     id: str
     passwd: float
     lastCheckoutTime: date = datetime.now()
-    checkoutAvailable: bool = False
+    checkoutAvailable: bool = True
 
 
 # ----- Web Obect Control ----- #
