@@ -1,4 +1,5 @@
 import random
+import ast
 import os
 import requests
 import time
@@ -7,6 +8,9 @@ import schedule
 import logging
 from configparser import ConfigParser
 from selenium import webdriver
+from dataclasses import dataclass 
+from datetime import date
+from datetime import datetime
 
 HEADERS = {'Content-Type':'application/json','User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36'}
 NEW_ARRIVAL_ADDRESS = "https://www.masterofmalt.com/new-arrivals/whisky-new-arrivals/"
@@ -21,6 +25,15 @@ m_lastNewProductIDs = ""
 m_sentList = []
 m_keys = []
 m_watchList = ""
+
+
+# ------ Data Structure ------ # 
+@dataclass 
+class userInfo: 
+    id: str
+    passwd: float
+    lastCheckoutTime: date = datetime.now()
+    checkoutAvailable: bool = False
 
 
 # ----- Web Obect Control ----- #
@@ -96,6 +109,23 @@ def parseNewProductKeys():
     m_keys = config['newProducts']['names'].split('&')
     logging.info("watching New Product List : " + str(m_keys))
 
+def parseUserAuthData():
+    global m_userInfoes
+    m_userInfoes = []
+    global m_currentUserIdx 
+    m_currentUserIdx = 0
+
+    userIDs = ast.literal_eval(config.get("user", "ID"))
+    userPWs = ast.literal_eval(config.get("user", "passwd"))
+    if len(userIDs) != len(userPWs) :
+        return False
+
+    for i in range(len(userIDs)):
+        userInfo(id="",passwd="",)
+        m_userInfoes.append(userInfo(id=userIDs[i],passwd=userPWs[i]))
+        
+    return True
+
 
 def parseWachingListProducts():
     
@@ -161,6 +191,7 @@ def resetSentList() :
 if __name__ == "__main__":
     parseNewProductKeys()
     parseWachingListProducts()
+    parseUserAuthData()
     webObjInit()
 
     watchingSpan = int(config['etc']['watchingSpan'])
