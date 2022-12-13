@@ -24,9 +24,11 @@ logging.basicConfig(filename="masterOfMalts.log", level=logging.INFO)
 m_lastNewProductIDs = ""
 m_sentList = []
 
+
 # ------ Error Code ------- #
 INVALID_WATCH_TARGET = -100
 INVALID_USER_INFO = -200
+
 
 # ------ Data Structure ------ # 
 @dataclass 
@@ -183,10 +185,11 @@ def sendStockAlarm(reStock, name, prodId):
     m_sentList.append(prodId)
 
 
-def resetSentList() :
+def resetDatas():
     m_sentList.clear()
-    sendMessage("### Reset sent list ###",2)
-
+    for info in m_userInfoes:
+        info.checkoutAvailable = True
+    sendMessage("### Reset Datas ###",2)    
 
 # TODO
 # def purchaseItemInBuske() : check out the users busket
@@ -211,7 +214,7 @@ if __name__ == "__main__":
     watchingSpan = int(config['etc']['watchingSpan'])
     watchCount = 0
     
-    schedule.every().day.at("09:00").do(resetSentList)
+    schedule.every().day.at(config['etc']['resetTime']).do(resetDatas)
     schedule.run_pending()
     
     while True:
