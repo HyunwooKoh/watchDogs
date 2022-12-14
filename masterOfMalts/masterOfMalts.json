@@ -1,39 +1,51 @@
 {
     "itemList": [{
         "name": "스뱅10",
-        "code": "2593"
+        "code": "2593",
+        "autoCheckOut" : false
     },{
         "name": "스뱅10 PX",
-        "code": "122029"
+        "code": "122029",
+        "autoCheckOut" : true
     },{
         "name": "스뱅12",
-        "code": "112374"
+        "code": "112374",
+        "autoCheckOut" : true
     },{
         "name": "스뱅15",
-        "code": "2595"
+        "code": "2595",
+        "autoCheckOut" : true
     },{
         "name": "스뱅18",
-        "code": "4098"
+        "code": "4098",
+        "autoCheckOut" : true
     },{
         "name": "햅번10",
-        "code": "35189"
+        "code": "35189",
+        "autoCheckOut" : false
     },{
         "name": "킬커란16",
-        "code": "104483"
+        "code": "104483",
+        "autoCheckOut" : false
     },{
         "name": "킬커란8CS 쉐리",
-        "code": "115522"
+        "code": "115522",
+        "autoCheckOut" : true
     },{
         "name": "킬커란 해피7",
-        "code": "122031"
+        "code": "122031",
+        "autoCheckOut" : true
     },{
         "name": "롱로우 REd 11-port",
-        "code": "122030"
+        "code": "122030",
+        "autoCheckOut" : true
     },{
         "name": "롱로우 Red 15-pinor",
-        "code": "115518"
+        "code": "115518",
+        "autoCheckOut" : true
     },{
         "name": "롱로우18",
-        "code": "9976"
+        "code": "9976",
+        "autoCheckOut" : true
     }]
 }

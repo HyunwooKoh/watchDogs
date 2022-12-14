@@ -15,6 +15,7 @@ from datetime import datetime
 HEADERS = {'Content-Type':'application/json','User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36'}
 NEW_ARRIVAL_ADDRESS = "https://www.masterofmalt.com/new-arrivals/whisky-new-arrivals/"
 TRACKING_ADDRESS = "https://www.masterofmalt.com/api/data/productstracking/"
+CHECKOUT_ADDRESS = "https://www.masterofmalt.com/checkout/address/"
 
 config = ConfigParser()
 config.read('masterOfMalts.ini')
@@ -39,6 +40,12 @@ class userInfo:
     checkoutAvailable: bool = True
 
 
+@dataclass 
+class watchItem: 
+    prodId: str
+    autoCheckOut: bool
+
+
 # ----- Web Obect Control ----- #
 def createWebObj():
     global m_driver
@@ -57,10 +64,10 @@ def webObjInit():
 
 def reCreateWebObj():
     m_driver.close()
-    sendMessage('### Sleep 10 Min to reopen webPage ###',2)
+    sendMessage('### Sleep 10 Min to reopen webPage ###', 2, False)
     time.sleep(600)
     webObjInit()
-    sendMessage('### reopen webPage ###',2)
+    sendMessage('### reopen webPage ###', 2, False)
     
 
 def login():
@@ -71,9 +78,20 @@ def login():
     time.sleep(5)
     m_driver.get("https://www.masterofmalt.com/#context-login")
     time.sleep(5)
-    m_driver.execute_script('txtLoginEmail.value=\"' + config['user']['ID'] + '\";txtLoginPassword.value=\"' + config['user']['passwd'] + '\";document.getElementById(\'MOMBuyButton\').click();')
+    m_driver.execute_script('txtLoginEmail.value=\"' + m_userInfoes[m_currentUserIdx].id + '\";txtLoginPassword.value=\"' + m_userInfoes[m_currentUserIdx].passwd + '\";document.getElementById(\'MOMBuyButton\').click();')
     time.sleep(5)
 
+
+def reopenAndChangeUsr():
+    m_driver.close()
+    m_userInfoes[m_currentUserIdx].lastCheckoutTime = datetime.now()
+    m_userInfoes[m_currentUserIdx].checkoutAvailable = False
+    if m_currentUserIdx + 1 == len(m_userInfoes):
+        m_currentUserIdx = 0
+    else :
+        m_currentUserIdx = m_currentUserIdx + 1
+    webObjInit()
+    sendMessage('### reopen webPage cuase by check out ###', 2, True)
 
 # ----- New Arrive Products Manage ----- #
 def refreshAndGetNewProductIds():    
@@ -96,14 +114,15 @@ def getProductInfoes(idString):
         ret = json.loads(r.content)
     except:
         if '403' in str(r):
-            sendMessage('API Blocked', 2)
+            sendMessage('API Blocked', 2, False)
         else:
-            sendMessage('Unknown Error occurred!\n' + str(r),2)
+            sendMessage('Unknown Error occurred!\n' + str(r), 2, False)
         return
     retString = str(r.content)
     retString = retString.replace("\\","")
     retString = retString.replace("'","")
     retString = retString[1:]
+    logging.info("proDuct info : " + retString)
     return retString
 
 
@@ -128,17 +147,21 @@ def parseUserAuthData():
     for i in range(len(userIDs)):
         userInfo(id="",passwd="",)
         m_userInfoes.append(userInfo(id=userIDs[i],passwd=userPWs[i]))
-        
+    logging.info(m_userInfoes)
     return True
 
 
 def parseWachingListProducts():
     global m_watchList
+    global m_watchItems
     m_watchList = ""
+    m_watchItems = []
+
     with open(os.getcwd() + '/masterOfMalts.json', 'r', encoding='UTF8') as jsonFile:
         itemData = json.load(jsonFile)
         for item in itemData['itemList']:
             m_watchList = m_watchList + item['code'] + ','
+            m_watchItems.append(watchItem(item['code'], item["autoCheckOut"]))
         m_watchList = m_watchList[:-1]
     logging.info("m_watchList : " + m_watchList)
 
@@ -146,6 +169,7 @@ def parseWachingListProducts():
 def checkProductInfoes(jsonString):
     jsonData = json.loads(jsonString)
     products = jsonData['products']
+    checkout = False
     for item in products:
         prodId = item['productID']
         prodName = item['name'].lower()
@@ -157,17 +181,23 @@ def checkProductInfoes(jsonString):
                     if (key in prodName):
                         sendStockAlarm(False, prodName, prodId)
             else:
+                if isSwitchOn(prodId) :
+                    checkout = checkOutTheItem(prodId)
                 sendStockAlarm(True, prodName, prodId)
+        # if checkout :
+        #     reopenAndChangeUsr()
 
 
 # ----- Utills  ----- #
-def sendMessage(text, sendCount):
+def sendMessage(text, sendCount, personal):
     try:
+        slackHeaders = {"Authorization": "Bearer "+ config['slack']['token']}
+        slackDatas = {"channel": '#' + config['slack']['channel'],"text": text} if personal else {"channel": '#' + config['slack']['personalChannel'],"text": text} 
         for i in range(1,sendCount):
             requests.post("https://slack.com/api/chat.postMessage",
-            headers={"Authorization": "Bearer "+ config['slack']['token']},
-            data={"channel": '#' + config['slack']['channel'],"text": text})
-            time.sleep(1)
+            headers=slackHeaders,
+            data=slackDatas)
+            time.sleep(0.5)
     except:
         logging.error("### error occur during sendMessage. msg : " + text)
 
@@ -179,9 +209,8 @@ def sendStockAlarm(reStock, name, prodId):
         text = "###### NEW STOCK ######\n"
     text = text + name + " Arrived !!\n"
     text = text + "https://www.masterofmalt.com/s/?q=" + name + "&size=n_25_n"
-    print("send target item incomed message")
-    sendMessage(text,5)
-    m_driver.execute_script('AddToBasket(' + str(prodId) + ')')
+    sendMessage(text, 5, False)
+    logging.info(text)
     m_sentList.append(prodId)
 
 
@@ -189,10 +218,32 @@ def resetDatas():
     m_sentList.clear()
     for info in m_userInfoes:
         info.checkoutAvailable = True
-    sendMessage("### Reset Datas ###",2)    
+    sendMessage("### Reset Datas ###", 2, False)    
 
-# TODO
-# def purchaseItemInBuske() : check out the users busket
+
+def isSwitchOn(targetId) :
+    for item in m_watchItems:
+        if item.prodId == targetId :
+            return item.autoCheckOut
+    return False
+
+
+def checkOutTheItem(prodId) :
+    m_driver.execute_script('AddToBasket(' + str(prodId) + ')') 
+    totalCount = m_driver.execute_script('var total = getBasketQuantityTotal(); return total')
+    purchased = False
+    logging.info("checkOutTheItem item : " + str(prodId))
+    if totalCount == 1 :
+        m_driver.get(CHECKOUT_ADDRESS)
+        m_driver.execute_script('document.getElementsByName(\'disclaimer-checkbox\')[1].click()')
+        m_driver.execute_script('document.body.getElementsByClassName(\'mom-btn mom-btn-large mom-btn-green-alt mom-btn-full-width\')[0].click();')
+        purchased = True
+        sendMessage("##### checkout Try ##### ", 5, True)
+    else :
+        text = "###### watch List re-stock, but just add to basket ######\n"
+        text = text + ""
+        sendMessage(text, 5, True)
+    return purchased
 
 
 if __name__ == "__main__":
@@ -220,26 +271,26 @@ if __name__ == "__main__":
     while True:
         watchCount = watchCount + 1    
         if watchCount % watchingSpan == 0:
-            sendMessage("### still watching ###", 2)
+            sendMessage("### still watching ###", 2, False)
             watchCount = 0
 
         try:
             idString = refreshAndGetNewProductIds()
             if (m_lastNewProductIDs != idString) :
-                sendMessage("### New Item Arrived, Check New List ###", 2)
+                sendMessage("### New Item Arrived, Check New List ###", 2, False)
                 m_lastNewProductIDs = idString
                 jsonString = getProductInfoes(idString)
                 logging.info('New Product IDs : ' + idString + '\n')
                 checkProductInfoes(jsonString)                
         except:
-                sendMessage("### Error occur during get New Products info", 2)
+                sendMessage("### Error occur during get New Products info", 2, False)
                 reCreateWebObj()
 
         try:
             jsonString = getProductInfoes(m_watchList)
             checkProductInfoes(jsonString)
         except:
-            sendMessage("### Error occur during get watching products info", 2)
+            sendMessage("### Error occur during get watching products info", 2, False)
             reCreateWebObj()
 
         time.sleep(random.randrange(30,60))
