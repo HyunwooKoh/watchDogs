@@ -48,22 +48,22 @@ class watchItem:
 
 # ----- Web Obect Control ----- #
 def createWebObj():
-    global m_driver
+    global m_watchDriver
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument('--disable-dev-shm-usage')
-    m_driver = webdriver.Chrome(config['chrome']['enginePath'], chrome_options=chrome_options)
+    
 
 
 def webObjInit():
     createWebObj()
     login()
-    m_driver.get(NEW_ARRIVAL_ADDRESS)
+    m_watchDriver.get(NEW_ARRIVAL_ADDRESS)
     
 
 def reCreateWebObj():
-    m_driver.close()
+    m_watchDriver.close()
     sendMessage('### Sleep 10 Min to reopen webPage ###', 2, False)
     time.sleep(600)
     webObjInit()
@@ -71,14 +71,14 @@ def reCreateWebObj():
     
 
 def login():
-    m_driver.get("https://www.masterofmalt.com")
+    m_watchDriver.get("https://www.masterofmalt.com")
     time.sleep(10)
-    m_driver.execute_script('document.getElementById(\'onetrust-accept-btn-handler\').click();')
-    m_driver.execute_script('document.getElementById(\'InternationalPopupConfirmation\').click();')
+    m_watchDriver.execute_script('document.getElementById(\'onetrust-accept-btn-handler\').click();')
+    m_watchDriver.execute_script('document.getElementById(\'InternationalPopupConfirmation\').click();')
     time.sleep(5)
-    m_driver.get("https://www.masterofmalt.com/#context-login")
+    m_watchDriver.get("https://www.masterofmalt.com/#context-login")
     time.sleep(5)
-    m_driver.execute_script('txtLoginEmail.value=\"' + m_userInfoes[m_currentUserIdx].id + '\";txtLoginPassword.value=\"' + m_userInfoes[m_currentUserIdx].passwd + '\";document.getElementById(\'MOMBuyButton\').click();')
+    m_watchDriver.execute_script('txtLoginEmail.value=\"' + m_userInfoes[m_currentUserIdx].id + '\";txtLoginPassword.value=\"' + m_userInfoes[m_currentUserIdx].passwd + '\";document.getElementById(\'MOMBuyButton\').click();')
     time.sleep(5)
 
 
@@ -96,10 +96,10 @@ def reopenAndChangeUsr():
 # ----- New Arrive Products Manage ----- #
 def refreshAndGetNewProductIds():    
     logging.info("Refresh page\n")
-    m_driver.refresh()
-    m_driver.implicitly_wait(15)
+    m_watchDriver.refresh()
+    m_watchDriver.implicitly_wait(15)
     idString = ""
-    dataLayer = m_driver.execute_script('var iDs = window.dataLayer; return iDs')
+    dataLayer = m_watchDriver.execute_script('var iDs = window.dataLayer; return iDs')
     for data in dataLayer:
         if ("productIDs" in data):
             result = data['productIDs']
@@ -229,14 +229,14 @@ def isSwitchOn(targetId) :
 
 
 def checkOutTheItem(prodId) :
-    m_driver.execute_script('AddToBasket(' + str(prodId) + ')') 
-    totalCount = m_driver.execute_script('var total = getBasketQuantityTotal(); return total')
+    m_watchDriver.execute_script('AddToBasket(' + str(prodId) + ')') 
+    totalCount = m_watchDriver.execute_script('var total = getBasketQuantityTotal(); return total')
     purchased = False
     logging.info("checkOutTheItem item : " + str(prodId))
     if totalCount == 1 :
-        m_driver.get(CHECKOUT_ADDRESS)
-        m_driver.execute_script('document.getElementsByName(\'disclaimer-checkbox\')[1].click()')
-        m_driver.execute_script('document.body.getElementsByClassName(\'mom-btn mom-btn-large mom-btn-green-alt mom-btn-full-width\')[0].click();')
+        m_watchDriver.get(CHECKOUT_ADDRESS)
+        m_watchDriver.execute_script('document.getElementsByName(\'disclaimer-checkbox\')[1].click()')
+        m_watchDriver.execute_script('document.body.getElementsByClassName(\'mom-btn mom-btn-large mom-btn-green-alt mom-btn-full-width\')[0].click();')
         purchased = True
         sendMessage("##### checkout Try ##### ", 5, True)
     else :
