@@ -49,11 +49,14 @@ class watchItem:
 # ----- Web Obect Control ----- #
 def createWebObj():
     global m_watchDriver
+    global m_checkoutDriver
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument('--disable-dev-shm-usage')
     
+    m_watchDriver = webdriver.Chrome(config['chrome']['enginePath'], chrome_options=chrome_options)
+    m_checkoutDriver = webdriver.Chrome(config['chrome']['enginePath'], chrome_options=chrome_options)
 
 
 def webObjInit():
@@ -64,6 +67,7 @@ def webObjInit():
 
 def reCreateWebObj():
     m_watchDriver.close()
+    m_checkoutDriver.close()
     sendMessage('### Sleep 10 Min to reopen webPage ###', 2, False)
     time.sleep(600)
     webObjInit()
@@ -72,26 +76,23 @@ def reCreateWebObj():
 
 def login():
     m_watchDriver.get("https://www.masterofmalt.com")
+    m_checkoutDriver.get("https://www.masterofmalt.com")
     time.sleep(10)
+    
     m_watchDriver.execute_script('document.getElementById(\'onetrust-accept-btn-handler\').click();')
     m_watchDriver.execute_script('document.getElementById(\'InternationalPopupConfirmation\').click();')
+    m_checkoutDriver.execute_script('document.getElementById(\'onetrust-accept-btn-handler\').click();')
+    m_checkoutDriver.execute_script('document.getElementById(\'InternationalPopupConfirmation\').click();')
     time.sleep(5)
+    
     m_watchDriver.get("https://www.masterofmalt.com/#context-login")
+    m_checkoutDriver.get("https://www.masterofmalt.com/#context-login")
     time.sleep(5)
-    m_watchDriver.execute_script('txtLoginEmail.value=\"' + m_userInfoes[m_currentUserIdx].id + '\";txtLoginPassword.value=\"' + m_userInfoes[m_currentUserIdx].passwd + '\";document.getElementById(\'MOMBuyButton\').click();')
+    
+    m_watchDriver.execute_script('txtLoginEmail.value=\"' + m_userInfoes[0].id + '\";txtLoginPassword.value=\"' + m_userInfoes[0].passwd + '\";document.getElementById(\'MOMBuyButton\').click();')
+    m_checkoutDriver.execute_script('txtLoginEmail.value=\"' + m_userInfoes[1].id + '\";txtLoginPassword.value=\"' + m_userInfoes[1].passwd + '\";document.getElementById(\'MOMBuyButton\').click();')
     time.sleep(5)
 
-
-def reopenAndChangeUsr():
-    m_driver.close()
-    m_userInfoes[m_currentUserIdx].lastCheckoutTime = datetime.now()
-    m_userInfoes[m_currentUserIdx].checkoutAvailable = False
-    if m_currentUserIdx + 1 == len(m_userInfoes):
-        m_currentUserIdx = 0
-    else :
-        m_currentUserIdx = m_currentUserIdx + 1
-    webObjInit()
-    sendMessage('### reopen webPage cuase by check out ###', 2, True)
 
 # ----- New Arrive Products Manage ----- #
 def refreshAndGetNewProductIds():    
@@ -136,8 +137,6 @@ def parseNewProductKeys():
 def parseUserAuthData():
     global m_userInfoes
     m_userInfoes = []
-    global m_currentUserIdx 
-    m_currentUserIdx = 0
 
     userIDs = ast.literal_eval(config.get("user", "ID"))
     userPWs = ast.literal_eval(config.get("user", "passwd"))
@@ -169,7 +168,6 @@ def parseWachingListProducts():
 def checkProductInfoes(jsonString):
     jsonData = json.loads(jsonString)
     products = jsonData['products']
-    checkout = False
     for item in products:
         prodId = item['productID']
         prodName = item['name'].lower()
@@ -182,10 +180,8 @@ def checkProductInfoes(jsonString):
                         sendStockAlarm(False, prodName, prodId)
             else:
                 if isSwitchOn(prodId) :
-                    checkout = checkOutTheItem(prodId)
+                    checkOutTheItem(prodId)
                 sendStockAlarm(True, prodName, prodId)
-        # if checkout :
-        #     reopenAndChangeUsr()
 
 
 # ----- Utills  ----- #
@@ -203,6 +199,8 @@ def sendMessage(text, sendCount, personal):
 
 
 def sendStockAlarm(reStock, name, prodId):
+    m_watchDriver.execute_script('AddToBasket(' + str(prodId) + ')') 
+    logging.info("checkOutTheItem item : " + str(prodId))
     if reStock:
         text = "###### Re-Stock ######\n"
     else:
@@ -229,22 +227,29 @@ def isSwitchOn(targetId) :
 
 
 def checkOutTheItem(prodId) :
-    m_watchDriver.execute_script('AddToBasket(' + str(prodId) + ')') 
-    totalCount = m_watchDriver.execute_script('var total = getBasketQuantityTotal(); return total')
-    purchased = False
-    logging.info("checkOutTheItem item : " + str(prodId))
-    if totalCount == 1 :
-        m_watchDriver.get(CHECKOUT_ADDRESS)
-        m_watchDriver.execute_script('document.getElementsByName(\'disclaimer-checkbox\')[1].click()')
-        m_watchDriver.execute_script('document.body.getElementsByClassName(\'mom-btn mom-btn-large mom-btn-green-alt mom-btn-full-width\')[0].click();')
-        purchased = True
-        sendMessage("##### checkout Try ##### ", 5, True)
+    totalCount = m_checkoutDriver.execute_script('var total = getBasketQuantityTotal(); return total')
+    if totalCount == 0 and m_userInfoes[1].checkoutAvailable :
+        logging.info("checkOutTheItem item : " + str(prodId))
+        m_checkoutDriver.execute_script('AddToBasket(' + str(prodId) + ')') 
+    
+        m_checkoutDriver.get(CHECKOUT_ADDRESS)
+        while True:
+            if m_checkoutDriver.find_element("disclaimer-checkbox") :
+                break
+            else:
+                logging.info("Waiting checkout page... ")
+                print("finding checkbox")
+            time.sleep(0.5)
+
+        m_checkoutDriver.execute_script('document.getElementsByName(\'disclaimer-checkbox\')[1].click()')
+        m_checkoutDriver.execute_script('document.body.getElementsByClassName(\'mom-btn mom-btn-large mom-btn-green-alt mom-btn-full-width\')[0].click();')
+        sendMessage("##### checkout tried ##### ", 5, True)
+        m_userInfoes[1].checkoutAvailable = False
     else :
         text = "###### watch List re-stock, but just add to basket ######\n"
         text = text + ""
         sendMessage(text, 5, True)
-    return purchased
-
+    
 
 if __name__ == "__main__":
 
