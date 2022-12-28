@@ -6,6 +6,7 @@ import time
 import json
 import schedule
 import logging
+import platform
 from configparser import ConfigParser
 from selenium import webdriver
 from dataclasses import dataclass 
@@ -48,26 +49,26 @@ class watchItem:
 
 # ----- Web Obect Control ----- #
 def createWebObj():
-    global m_watchDriver
-    global m_checkoutDriver
+    global m_driver
     chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument('--disable-dev-shm-usage')
     
-    m_watchDriver = webdriver.Chrome(config['chrome']['enginePath'], chrome_options=chrome_options)
-    m_checkoutDriver = webdriver.Chrome(config['chrome']['enginePath'], chrome_options=chrome_options)
-
+    if platform.system() != 'Windows':
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument('--disable-dev-shm-usage')
+    
+    m_driver = webdriver.Chrome(config['chrome']['enginePath'], chrome_options=chrome_options)
+    time.sleep(1)
+    
 
 def webObjInit():
     createWebObj()
     login()
-    m_watchDriver.get(NEW_ARRIVAL_ADDRESS)
+    m_driver.get(NEW_ARRIVAL_ADDRESS)
     
 
 def reCreateWebObj():
-    m_watchDriver.close()
-    m_checkoutDriver.close()
+    m_driver.close()
     sendMessage('### Sleep 10 Min to reopen webPage ###', 2, False)
     time.sleep(600)
     webObjInit()
@@ -75,32 +76,33 @@ def reCreateWebObj():
     
 
 def login():
-    m_watchDriver.get("https://www.masterofmalt.com")
-    m_checkoutDriver.get("https://www.masterofmalt.com")
+    m_driver.get("https://www.masterofmalt.com")
     time.sleep(10)
     
-    m_watchDriver.execute_script('document.getElementById(\'onetrust-accept-btn-handler\').click();')
-    m_watchDriver.execute_script('document.getElementById(\'InternationalPopupConfirmation\').click();')
-    m_checkoutDriver.execute_script('document.getElementById(\'onetrust-accept-btn-handler\').click();')
-    m_checkoutDriver.execute_script('document.getElementById(\'InternationalPopupConfirmation\').click();')
+    m_driver.execute_script('document.getElementById(\'onetrust-accept-btn-handler\').click();')
+    m_driver.execute_script('document.getElementById(\'InternationalPopupConfirmation\').click();')
     time.sleep(5)
     
-    m_watchDriver.get("https://www.masterofmalt.com/#context-login")
-    m_checkoutDriver.get("https://www.masterofmalt.com/#context-login")
+    m_driver.get("https://www.masterofmalt.com/#context-login")
     time.sleep(5)
     
-    m_watchDriver.execute_script('txtLoginEmail.value=\"' + m_userInfoes[0].id + '\";txtLoginPassword.value=\"' + m_userInfoes[0].passwd + '\";document.getElementById(\'MOMBuyButton\').click();')
-    m_checkoutDriver.execute_script('txtLoginEmail.value=\"' + m_userInfoes[1].id + '\";txtLoginPassword.value=\"' + m_userInfoes[1].passwd + '\";document.getElementById(\'MOMBuyButton\').click();')
+    m_driver.execute_script('txtLoginEmail.value=\"' + m_userInfoes[0].id + '\";txtLoginPassword.value=\"' + m_userInfoes[0].passwd + '\";document.getElementById(\'MOMBuyButton\').click();')
+
+    time.sleep(10)
+
+    time.sleep(5)
+
+    time.sleep(5)
     time.sleep(5)
 
 
 # ----- New Arrive Products Manage ----- #
 def refreshAndGetNewProductIds():    
     logging.info("Refresh page\n")
-    m_watchDriver.refresh()
-    m_watchDriver.implicitly_wait(15)
+    m_driver.refresh()
+    m_driver.implicitly_wait(15)
     idString = ""
-    dataLayer = m_watchDriver.execute_script('var iDs = window.dataLayer; return iDs')
+    dataLayer = m_driver.execute_script('var iDs = window.dataLayer; return iDs')
     for data in dataLayer:
         if ("productIDs" in data):
             result = data['productIDs']
@@ -188,7 +190,7 @@ def checkProductInfoes(jsonString):
 def sendMessage(text, sendCount, personal):
     try:
         slackHeaders = {"Authorization": "Bearer "+ config['slack']['token']}
-        slackDatas = {"channel": '#' + config['slack']['channel'],"text": text} if personal else {"channel": '#' + config['slack']['personalChannel'],"text": text} 
+        slackDatas = {"channel": '#' + config['slack']['channel'],"text": text} if not personal else {"channel": '#' + config['slack']['personalChannel'],"text": text} 
         for i in range(1,sendCount):
             requests.post("https://slack.com/api/chat.postMessage",
             headers=slackHeaders,
@@ -199,7 +201,6 @@ def sendMessage(text, sendCount, personal):
 
 
 def sendStockAlarm(reStock, name, prodId):
-    m_watchDriver.execute_script('AddToBasket(' + str(prodId) + ')') 
     logging.info("checkOutTheItem item : " + str(prodId))
     if reStock:
         text = "###### Re-Stock ######\n"
@@ -227,22 +228,21 @@ def isSwitchOn(targetId) :
 
 
 def checkOutTheItem(prodId) :
-    totalCount = m_checkoutDriver.execute_script('var total = getBasketQuantityTotal(); return total')
+    totalCount = m_driver.execute_script('var total = getBasketQuantityTotal(); return total')
     if totalCount == 0 and m_userInfoes[1].checkoutAvailable :
         logging.info("checkOutTheItem item : " + str(prodId))
-        m_checkoutDriver.execute_script('AddToBasket(' + str(prodId) + ')') 
-    
-        m_checkoutDriver.get(CHECKOUT_ADDRESS)
+        m_driver.execute_script('AddToBasket(' + str(prodId) + ')') 
+        m_driver.get(CHECKOUT_ADDRESS)
         while True:
-            if m_checkoutDriver.find_element("disclaimer-checkbox") :
+            if m_driver.find_element("disclaimer-checkbox") :
                 break
             else:
                 logging.info("Waiting checkout page... ")
                 print("finding checkbox")
             time.sleep(0.5)
 
-        m_checkoutDriver.execute_script('document.getElementsByName(\'disclaimer-checkbox\')[1].click()')
-        m_checkoutDriver.execute_script('document.body.getElementsByClassName(\'mom-btn mom-btn-large mom-btn-green-alt mom-btn-full-width\')[0].click();')
+        m_driver.execute_script('document.getElementsByName(\'disclaimer-checkbox\')[1].click()')
+        m_driver.execute_script('document.body.getElementsByClassName(\'mom-btn mom-btn-large mom-btn-green-alt mom-btn-full-width\')[0].click();')
         sendMessage("##### checkout tried ##### ", 5, True)
         m_userInfoes[1].checkoutAvailable = False
     else :
