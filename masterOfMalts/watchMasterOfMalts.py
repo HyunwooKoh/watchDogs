@@ -6,6 +6,7 @@ import time
 import json
 import schedule
 import logging
+import platform
 from configparser import ConfigParser
 from selenium import webdriver
 from dataclasses import dataclass 
@@ -50,11 +51,11 @@ class watchItem:
 def createWebObj():
     global m_driver
     chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument('--disable-dev-shm-usage')
-    m_driver = webdriver.Chrome(config['chrome']['enginePath'], chrome_options=chrome_options)
-
+    
+    if platform.system() != 'Windows':
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument('--disable-dev-shm-usage')
 
 def webObjInit():
     createWebObj()
