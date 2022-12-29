@@ -165,23 +165,26 @@ def parseWachingListProducts():
             m_watchItems.append(watchItem(item['code'], item["autoCheckOut"]))
         m_watchList = m_watchList[:-1]
     logging.info("m_watchList : " + m_watchList)
+    print(m_watchItems)
 
 
 def checkProductInfoes(jsonString):
     jsonData = json.loads(jsonString)
     products = jsonData['products']
     for item in products:
-        prodId = item['productID']
+        prodId = str(item['productID'])
         prodName = item['name'].lower()
         avab =  item['available']     
         
         if avab == True and prodId not in m_sentList:
-            if str(prodId) in m_lastNewProductIDs:
+            if prodId in m_lastNewProductIDs:
                 for key in m_newItmeKeys :
                     if (key in prodName):
                         sendStockAlarm(False, prodName, prodId)
             else:
+                print("0")
                 if isSwitchOn(prodId) :
+                    print("1")
                     checkOutTheItem(prodId)
                 sendStockAlarm(True, prodName, prodId)
 
@@ -229,22 +232,28 @@ def isSwitchOn(targetId) :
 
 def checkOutTheItem(prodId) :
     totalCount = m_driver.execute_script('var total = getBasketQuantityTotal(); return total')
-    if totalCount == 0 and m_userInfoes[1].checkoutAvailable :
-        logging.info("checkOutTheItem item : " + str(prodId))
-        m_driver.execute_script('AddToBasket(' + str(prodId) + ')') 
+    print(totalCount)
+    if totalCount == 0 and m_userInfoes[0].checkoutAvailable :
+        logging.info("checkOutTheItem item : " + prodId)
+        m_driver.execute_script('AddToBasket(' + prodId + ')') 
         m_driver.get(CHECKOUT_ADDRESS)
+        time.sleep(3)
+        
         while True:
-            if m_driver.find_element("disclaimer-checkbox") :
+            try :
+                m_driver.execute_script('document.getElementsByName(\'disclaimer-checkbox\')[1].click()')
                 break
-            else:
-                logging.info("Waiting checkout page... ")
-                print("finding checkbox")
-            time.sleep(0.5)
+            except:
+                time.sleep(0.5)
+        while True:
+            try :
+                m_driver.execute_script('document.body.getElementsByClassName(\'mom-btn mom-btn-large mom-btn-green-alt mom-btn-full-width\')[0].click();')
+                break
+            except:
+                time.sleep(0.5)
 
-        m_driver.execute_script('document.getElementsByName(\'disclaimer-checkbox\')[1].click()')
-        m_driver.execute_script('document.body.getElementsByClassName(\'mom-btn mom-btn-large mom-btn-green-alt mom-btn-full-width\')[0].click();')
         sendMessage("##### checkout tried ##### ", 5, True)
-        m_userInfoes[1].checkoutAvailable = False
+        m_userInfoes[0].checkoutAvailable = False
     else :
         text = "###### watch List re-stock, but just add to basket ######\n"
         text = text + ""
