@@ -56,6 +56,10 @@ def createWebObj():
         chrome_options.add_argument("--headless")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument('--disable-dev-shm-usage')
+    
+    m_driver = webdriver.Chrome(config['chrome']['enginePath'], chrome_options=chrome_options)
+    time.sleep(1)
+    
 
 def webObjInit():
     createWebObj()
@@ -74,25 +78,23 @@ def reCreateWebObj():
 def login():
     m_driver.get("https://www.masterofmalt.com")
     time.sleep(10)
+    
     m_driver.execute_script('document.getElementById(\'onetrust-accept-btn-handler\').click();')
     m_driver.execute_script('document.getElementById(\'InternationalPopupConfirmation\').click();')
     time.sleep(5)
+    
     m_driver.get("https://www.masterofmalt.com/#context-login")
     time.sleep(5)
-    m_driver.execute_script('txtLoginEmail.value=\"' + m_userInfoes[m_currentUserIdx].id + '\";txtLoginPassword.value=\"' + m_userInfoes[m_currentUserIdx].passwd + '\";document.getElementById(\'MOMBuyButton\').click();')
+    
+    m_driver.execute_script('txtLoginEmail.value=\"' + m_userInfoes[0].id + '\";txtLoginPassword.value=\"' + m_userInfoes[0].passwd + '\";document.getElementById(\'MOMBuyButton\').click();')
+
+    time.sleep(10)
+
     time.sleep(5)
 
+    time.sleep(5)
+    time.sleep(5)
 
-def reopenAndChangeUsr():
-    m_driver.close()
-    m_userInfoes[m_currentUserIdx].lastCheckoutTime = datetime.now()
-    m_userInfoes[m_currentUserIdx].checkoutAvailable = False
-    if m_currentUserIdx + 1 == len(m_userInfoes):
-        m_currentUserIdx = 0
-    else :
-        m_currentUserIdx = m_currentUserIdx + 1
-    webObjInit()
-    sendMessage('### reopen webPage cuase by check out ###', 2, True)
 
 # ----- New Arrive Products Manage ----- #
 def refreshAndGetNewProductIds():    
@@ -137,8 +139,6 @@ def parseNewProductKeys():
 def parseUserAuthData():
     global m_userInfoes
     m_userInfoes = []
-    global m_currentUserIdx 
-    m_currentUserIdx = 0
 
     userIDs = ast.literal_eval(config.get("user", "ID"))
     userPWs = ast.literal_eval(config.get("user", "passwd"))
@@ -165,35 +165,35 @@ def parseWachingListProducts():
             m_watchItems.append(watchItem(item['code'], item["autoCheckOut"]))
         m_watchList = m_watchList[:-1]
     logging.info("m_watchList : " + m_watchList)
+    print(m_watchItems)
 
 
 def checkProductInfoes(jsonString):
     jsonData = json.loads(jsonString)
     products = jsonData['products']
-    checkout = False
     for item in products:
-        prodId = item['productID']
+        prodId = str(item['productID'])
         prodName = item['name'].lower()
         avab =  item['available']     
         
         if avab == True and prodId not in m_sentList:
-            if str(prodId) in m_lastNewProductIDs:
+            if prodId in m_lastNewProductIDs:
                 for key in m_newItmeKeys :
                     if (key in prodName):
                         sendStockAlarm(False, prodName, prodId)
             else:
+                print("0")
                 if isSwitchOn(prodId) :
-                    checkout = checkOutTheItem(prodId)
+                    print("1")
+                    checkOutTheItem(prodId)
                 sendStockAlarm(True, prodName, prodId)
-        # if checkout :
-        #     reopenAndChangeUsr()
 
 
 # ----- Utills  ----- #
 def sendMessage(text, sendCount, personal):
     try:
         slackHeaders = {"Authorization": "Bearer "+ config['slack']['token']}
-        slackDatas = {"channel": '#' + config['slack']['channel'],"text": text} if personal else {"channel": '#' + config['slack']['personalChannel'],"text": text} 
+        slackDatas = {"channel": '#' + config['slack']['channel'],"text": text} if not personal else {"channel": '#' + config['slack']['personalChannel'],"text": text} 
         for i in range(1,sendCount):
             requests.post("https://slack.com/api/chat.postMessage",
             headers=slackHeaders,
@@ -204,6 +204,7 @@ def sendMessage(text, sendCount, personal):
 
 
 def sendStockAlarm(reStock, name, prodId):
+    logging.info("checkOutTheItem item : " + str(prodId))
     if reStock:
         text = "###### Re-Stock ######\n"
     else:
@@ -230,22 +231,34 @@ def isSwitchOn(targetId) :
 
 
 def checkOutTheItem(prodId) :
-    m_driver.execute_script('AddToBasket(' + str(prodId) + ')') 
     totalCount = m_driver.execute_script('var total = getBasketQuantityTotal(); return total')
-    purchased = False
-    logging.info("checkOutTheItem item : " + str(prodId))
-    if totalCount == 1 :
+    print(totalCount)
+    if totalCount == 0 and m_userInfoes[0].checkoutAvailable :
+        logging.info("checkOutTheItem item : " + prodId)
+        m_driver.execute_script('AddToBasket(' + prodId + ')') 
         m_driver.get(CHECKOUT_ADDRESS)
-        m_driver.execute_script('document.getElementsByName(\'disclaimer-checkbox\')[1].click()')
-        m_driver.execute_script('document.body.getElementsByClassName(\'mom-btn mom-btn-large mom-btn-green-alt mom-btn-full-width\')[0].click();')
-        purchased = True
-        sendMessage("##### checkout Try ##### ", 5, True)
+        time.sleep(3)
+        
+        while True:
+            try :
+                m_driver.execute_script('document.getElementsByName(\'disclaimer-checkbox\')[1].click()')
+                break
+            except:
+                time.sleep(0.5)
+        while True:
+            try :
+                m_driver.execute_script('document.body.getElementsByClassName(\'mom-btn mom-btn-large mom-btn-green-alt mom-btn-full-width\')[0].click();')
+                break
+            except:
+                time.sleep(0.5)
+
+        sendMessage("##### checkout tried ##### ", 5, True)
+        m_userInfoes[0].checkoutAvailable = False
     else :
         text = "###### watch List re-stock, but just add to basket ######\n"
         text = text + ""
         sendMessage(text, 5, True)
-    return purchased
-
+    
 
 if __name__ == "__main__":
 
