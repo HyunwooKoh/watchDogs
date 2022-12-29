@@ -34,7 +34,7 @@
     },{
         "name": "킬커란 해피7",
         "code": "122031",
-        "autoCheckOut" : true
+        "autoCheckOut" : false
     },{
         "name": "롱로우 REd 11-port",
         "code": "122030",
