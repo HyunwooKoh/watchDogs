@@ -1,0 +1,15 @@
+version: "3.2"
+
+services:
+  masterofmalts:
+    image: watchDogs:latest
+    container_name: masterofMalt-dog
+    command: /home/watchDogs/startService.sh
+    environment:
+      - "watchTarget=masterofmalts"
+  nickollsandperks:
+    image: watchDogs:latest
+    container_name: nickollsandperks-dog
+    command: /home/watchDogs/startService.sh
+    environment:
+      - "watchTarget=nickollsandperks"
