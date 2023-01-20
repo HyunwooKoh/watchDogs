@@ -24,6 +24,7 @@ config.read('masterOfMalts.ini')
 logging.basicConfig(filename="masterOfMalts.log", level=logging.INFO)
 
 m_lastNewProductIDs = ""
+m_lastNewProductInfos = []
 m_sentList = []
 
 
@@ -46,6 +47,11 @@ class watchItem:
     prodId: str
     autoCheckOut: bool
 
+
+@dataclass
+class productInfo:
+    prodId: int
+    prodName: str
 
 # ----- Web Obect Control ----- #
 def createWebObj():
@@ -102,13 +108,18 @@ def refreshAndGetNewProductIds():
     m_driver.refresh()
     m_driver.implicitly_wait(15)
     idString = ""
+    prodinfo = []
     dataLayer = m_driver.execute_script('var iDs = window.dataLayer; return iDs')
     for data in dataLayer:
         if ("productIDs" in data):
-            result = data['productIDs']
-            idString = ','.join(map(str, result))
+            prodIds = data['productIDs']
+            prodNames = data['productNames']
+            idString = ','.join(map(str, prodIds))
+            for i in range(0, len(prodIds)):
+                prodinfo.append(productInfo(prodIds[i], prodNames[i]))
+            break
     logging.info("refreshed idString : " + idString)    
-    return idString
+    return idString, prodinfo
 
 
 def getProductInfoes(idString):
@@ -203,6 +214,21 @@ def sendMessage(text, sendCount, personal):
         logging.error("### error occur during sendMessage. msg : " + text)
 
 
+def sendNewProductInfos(newProdInfos):
+    newProductListMsg = "### New Item Arrived, Check New List ###"
+    for newInfo in newProdInfos:
+        isNew = True
+        for info in m_lastNewProductInfos:
+            if (info.prodId == newInfo.prodId):
+                isNew = False
+                break
+        if (isNew):
+            newProductListMsg += "\n- " + info.prodName
+
+    sendMessage(newProductListMsg, 2, False)
+            
+
+
 def sendStockAlarm(reStock, name, prodId):
     logging.info("checkOutTheItem item : " + str(prodId))
     if reStock:
@@ -289,9 +315,9 @@ if __name__ == "__main__":
             watchCount = 0
 
         try:
-            idString = refreshAndGetNewProductIds()
+            idString, newProdInfos = refreshAndGetNewProductIds()
             if (m_lastNewProductIDs != idString) :
-                sendMessage("### New Item Arrived, Check New List ###", 2, False)
+                sendNewProductInfos(newProdInfos)
                 m_lastNewProductIDs = idString
                 jsonString = getProductInfoes(idString)
                 logging.info('New Product IDs : ' + idString + '\n')
