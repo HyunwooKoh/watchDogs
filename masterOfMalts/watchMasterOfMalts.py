@@ -322,15 +322,17 @@ if __name__ == "__main__":
                 jsonString = getProductInfoes(idString)
                 logging.info('New Product IDs : ' + idString + '\n')
                 checkProductInfoes(jsonString)                
-        except:
+        except Exception as e:
                 sendMessage("### Error occur during get New Products info", 2, False)
+                sendMessage("Error info \n" + str(e), 2, True)
                 reCreateWebObj()
 
         try:
             jsonString = getProductInfoes(m_watchList)
             checkProductInfoes(jsonString)
-        except:
+        except Exception as e:
             sendMessage("### Error occur during get watching products info", 2, False)
+            sendMessage("Error info \n" + str(e), 2, True)
             reCreateWebObj()
 
         time.sleep(random.randrange(30,60))
