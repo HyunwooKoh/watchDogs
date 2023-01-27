@@ -2,3 +2,4 @@ requests
 schedule
 selenium
 dataclasses
+flask
