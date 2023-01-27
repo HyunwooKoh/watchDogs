@@ -7,11 +7,13 @@ import json
 import schedule
 import logging
 import platform
+from threading import Thread
 from configparser import ConfigParser
 from selenium import webdriver
 from dataclasses import dataclass 
 from datetime import date
 from datetime import datetime
+from flask import Flask, request, jsonify
 
 HEADERS = {'Content-Type':'application/json','User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36'}
 NEW_ARRIVAL_ADDRESS = "https://www.masterofmalt.com/new-arrivals/whisky-new-arrivals/"
@@ -20,6 +22,8 @@ CHECKOUT_ADDRESS = "https://www.masterofmalt.com/checkout/address/"
 
 config = ConfigParser()
 config.read('masterOfMalts.ini')
+
+apiApp = Flask(__name__)
 
 logging.basicConfig(filename="masterOfMalts.log", level=logging.INFO)
 
@@ -43,7 +47,8 @@ class userInfo:
 
 
 @dataclass 
-class watchItem: 
+class watchItem:
+    prodName: str 
     prodId: str
     autoCheckOut: bool
 
@@ -173,7 +178,7 @@ def parseWachingListProducts():
         itemData = json.load(jsonFile)
         for item in itemData['itemList']:
             m_watchList = m_watchList + item['code'] + ','
-            m_watchItems.append(watchItem(item['code'], item["autoCheckOut"]))
+            m_watchItems.append(watchItem(item['name'],item['code'],item['autoCheckOut']))
         m_watchList = m_watchList[:-1]
     logging.info("m_watchList : " + m_watchList)
     print(m_watchItems)
@@ -286,6 +291,27 @@ def checkOutTheItem(prodId) :
         sendMessage(text, 5, True)
     
 
+# ----- API  ----- #
+@apiApp.route('/add/watchItem', methods=['POST'])
+def addWatchItem():
+    params = request.get_json()
+    logging.info('ADD watch List Item API called, params : ' + str(params))
+
+    m_watchList += (',' + str(params['prodId']))
+    m_watchItems.append(watchItem(params['name'],params['prodId'],params['autoCheckout']))
+    
+    response = {
+        "result": "ok",
+        "m_watchList": str(m_watchList),
+        "m_watchItems": str(m_watchItems)
+    }
+    return jsonify(response)
+
+
+def runApiServer():
+    apiApp.run(host='0.0.0.0', port=8080)
+
+
 if __name__ == "__main__":
 
     parseNewProductKeys()
@@ -308,6 +334,9 @@ if __name__ == "__main__":
     schedule.every().day.at(config['etc']['resetTime']).do(resetDatas)
     schedule.run_pending()
     
+    apiThread = Thread(runApiServer)
+    apiThread.start()
+
     while True:
         watchCount = watchCount + 1    
         if watchCount % watchingSpan == 0:
