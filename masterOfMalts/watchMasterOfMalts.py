@@ -198,9 +198,7 @@ def checkProductInfoes(jsonString):
                     if (key in prodName):
                         sendStockAlarm(False, prodName, prodId)
             else:
-                print("0")
                 if isSwitchOn(prodId) :
-                    print("1")
                     checkOutTheItem(prodId)
                 sendStockAlarm(True, prodName, prodId)
 
