@@ -261,7 +261,7 @@ def isSwitchOn(targetId) :
 
 def checkOutTheItem(prodId) :
     totalCount = m_driver.execute_script('var total = getBasketQuantityTotal(); return total')
-    print(totalCount)
+    logging.info('check out , totalCount : ' + str(totalCount))
     if totalCount == 0 and m_userInfoes[0].checkoutAvailable :
         logging.info("checkOutTheItem item : " + prodId)
         m_driver.execute_script('AddToBasket(' + prodId + ')') 
