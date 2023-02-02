@@ -202,13 +202,18 @@ def checkProductInfoes(jsonString):
         
         if avab == True and prodId not in m_sentList:
             if prodId in m_lastNewProductIDs:
+                sent = False
                 for key in m_newItmeKeys :
                     if (key in prodName):
-                        sendStockAlarm(False, prodName, prodId)
+                        sendStockAlarm(False, 5, prodName, prodId, str(item['price']))
+                        sent = True
+                        break
+                if not sent:
+                    sendStockAlarm(False, 2, prodName, prodId, str(item['price']))
             else:
                 if isSwitchOn(prodId) :
                     checkOutTheItem(prodId)
-                sendStockAlarm(True, prodName, prodId)
+                sendStockAlarm(True, 5, prodName, prodId)
 
 
 # ----- Utills  ----- #
@@ -218,7 +223,7 @@ def sendMessage(text, sendCount, channelType):
     elif channelType == "Personal":
         channel = config['slack']['personalChannel']
     elif channelType == "Error":
-        channel = config['slack']['Error']
+        channel = config['slack']['ErrorChannel']
     
     try:
         slackHeaders = {"Authorization": "Bearer "+ config['slack']['token']}
@@ -247,15 +252,17 @@ def sendNewProductInfos(newProdInfos):
             
 
 
-def sendStockAlarm(reStock, name, prodId):
+def sendStockAlarm(reStock, sendCount, name, prodId, price=None):
     logging.info("checkOutTheItem item : " + str(prodId))
     if reStock:
         text = "###### Re-Stock ######\n"
     else:
         text = "###### NEW STOCK ######\n"
-    text = text + name + " Arrived !!\n"
+    text += "name : " + name + "\n"
+    if not reStock:
+        text += "price : " + price
     text = text + "https://www.masterofmalt.com/s/?q=" + name + "&size=n_25_n"
-    sendMessage(text, 5, "Notice")
+    sendMessage(text, sendCount, "Notice")
     logging.info(text)
     m_sentList.append(prodId)
 
