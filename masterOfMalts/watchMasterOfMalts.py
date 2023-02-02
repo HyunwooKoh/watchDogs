@@ -89,21 +89,26 @@ def reCreateWebObj():
 def login():
     m_driver.get("https://www.masterofmalt.com")
     time.sleep(10)
-    
-    m_driver.execute_script('document.getElementById(\'onetrust-accept-btn-handler\').click();')
-    m_driver.execute_script('document.getElementById(\'InternationalPopupConfirmation\').click();')
+    for i in range(0,10) :
+        onetrustBtn = m_driver.execute_script('btn = document.getElementById(\'onetrust-accept-btn-handler\'); return btn;')
+        if onetrustBtn is not None :
+            m_driver.execute_script('document.getElementById(\'onetrust-accept-btn-handler\').click();')
+            logging.info("click onetrust-accept-button")
+            break
+        time.sleep(1)
+
+    for i in range (0,10) :
+        popupBtn = m_driver.execute_script('btn = document.getElementById(\'InternationalPopupConfirmation\'); return btn;')
+        if popupBtn is not None :
+            m_driver.execute_script('document.getElementById(\'InternationalPopupConfirmation\').click();')
+            logging.info("click InternationalPopupConfirmation-button")
+            break
+        time.sleep(1)
+
     time.sleep(5)
-    
     m_driver.get("https://www.masterofmalt.com/#context-login")
     time.sleep(5)
-    
     m_driver.execute_script('txtLoginEmail.value=\"' + m_userInfoes[0].id + '\";txtLoginPassword.value=\"' + m_userInfoes[0].passwd + '\";document.getElementById(\'MOMBuyButton\').click();')
-
-    time.sleep(10)
-
-    time.sleep(5)
-
-    time.sleep(5)
     time.sleep(5)
 
 
