@@ -139,6 +139,9 @@ def getProductInfoes(idString):
     except:
         if '403' in str(r):
             sendMessage('API Blocked', 2, "Notice")
+        elif '520' in str(r):
+            sendMessage('520 Error, skip this try\n' + str(r), 2, "Error")
+            return ""
         else:
             sendMessage('Unknown Error occurred!\n' + str(r), 2, "Error")
         return
@@ -359,6 +362,8 @@ if __name__ == "__main__":
                 sendNewProductInfos(newProdInfos)
                 m_lastNewProductIDs = idString
                 jsonString = getProductInfoes(idString)
+                if len(jsonString) == 0 :
+                    continue
                 logging.info('New Product IDs : ' + idString + '\n')
                 checkProductInfoes(jsonString)                
         except Exception as e:
@@ -368,6 +373,8 @@ if __name__ == "__main__":
 
         try:
             jsonString = getProductInfoes(m_watchList)
+            if len(jsonString) == 0 :
+                    continue
             checkProductInfoes(jsonString)
         except Exception as e:
             sendMessage("### Error occur during get watching products info", 2, "Error")
