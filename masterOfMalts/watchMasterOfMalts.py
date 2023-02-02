@@ -80,10 +80,10 @@ def webObjInit():
 
 def reCreateWebObj():
     m_driver.close()
-    sendMessage('### Sleep 10 Min to reopen webPage ###', 2, False)
+    sendMessage('### Sleep 10 Min to reopen webPage ###', 2, "Notice")
     time.sleep(600)
     webObjInit()
-    sendMessage('### reopen webPage ###', 2, False)
+    sendMessage('### reopen webPage ###', 2, "Notice")
     
 
 def login():
@@ -138,9 +138,9 @@ def getProductInfoes(idString):
         ret = json.loads(r.content)
     except:
         if '403' in str(r):
-            sendMessage('API Blocked', 2, False)
+            sendMessage('API Blocked', 2, "Notice")
         else:
-            sendMessage('Unknown Error occurred!\n' + str(r), 2, False)
+            sendMessage('Unknown Error occurred!\n' + str(r), 2, "Error")
         return
     retString = str(r.content)
     retString = retString.replace("\\","")
@@ -209,10 +209,17 @@ def checkProductInfoes(jsonString):
 
 
 # ----- Utills  ----- #
-def sendMessage(text, sendCount, personal):
+def sendMessage(text, sendCount, channelType):
+    if channelType == "Notice":
+        channel = config['slack']['channel']
+    elif channelType == "Personal":
+        channel = config['slack']['personalChannel']
+    elif channelType == "Error":
+        channel = config['slack']['Error']
+    
     try:
         slackHeaders = {"Authorization": "Bearer "+ config['slack']['token']}
-        slackDatas = {"channel": '#' + config['slack']['channel'],"text": text} if not personal else {"channel": '#' + config['slack']['personalChannel'],"text": text} 
+        slackDatas = {"channel": '#' + channel,"text": text}
         for i in range(1,sendCount):
             requests.post("https://slack.com/api/chat.postMessage",
             headers=slackHeaders,
@@ -233,7 +240,7 @@ def sendNewProductInfos(newProdInfos):
         if (isNew):
             newProductListMsg += "\n- " + info.prodName
 
-    sendMessage(newProductListMsg, 2, False)
+    sendMessage(newProductListMsg, 2, "Notice")
             
 
 
@@ -245,7 +252,7 @@ def sendStockAlarm(reStock, name, prodId):
         text = "###### NEW STOCK ######\n"
     text = text + name + " Arrived !!\n"
     text = text + "https://www.masterofmalt.com/s/?q=" + name + "&size=n_25_n"
-    sendMessage(text, 5, False)
+    sendMessage(text, 5, "Notice")
     logging.info(text)
     m_sentList.append(prodId)
 
@@ -254,7 +261,7 @@ def resetDatas():
     m_sentList.clear()
     for info in m_userInfoes:
         info.checkoutAvailable = True
-    sendMessage("### Reset Datas ###", 2, False)    
+    sendMessage("### Reset Datas ###", 2, "Notice")    
 
 
 def isSwitchOn(targetId) :
@@ -286,12 +293,12 @@ def checkOutTheItem(prodId) :
             except:
                 time.sleep(0.5)
 
-        sendMessage("##### checkout tried ##### ", 5, True)
+        sendMessage("##### checkout tried ##### ", 5, "Personal")
         m_userInfoes[0].checkoutAvailable = False
     else :
         text = "###### watch List re-stock, but just add to basket ######\n"
         text = text + ""
-        sendMessage(text, 5, True)
+        sendMessage(text, 5, "Personal")
     
 
 # ----- API  ----- #
@@ -343,7 +350,7 @@ if __name__ == "__main__":
     while True:
         watchCount = watchCount + 1    
         if watchCount % watchingSpan == 0:
-            sendMessage("### still watching ###", 2, False)
+            sendMessage("### still watching ###", 2, "Notice")
             watchCount = 0
 
         try:
@@ -355,16 +362,16 @@ if __name__ == "__main__":
                 logging.info('New Product IDs : ' + idString + '\n')
                 checkProductInfoes(jsonString)                
         except Exception as e:
-                sendMessage("### Error occur during get New Products info", 2, False)
-                sendMessage("Error info \n" + str(e), 2, True)
+                sendMessage("### Error occur during get New Products info", 2, "Error")
+                sendMessage("Error info \n" + str(e), 2, "Error")
                 reCreateWebObj()
 
         try:
             jsonString = getProductInfoes(m_watchList)
             checkProductInfoes(jsonString)
         except Exception as e:
-            sendMessage("### Error occur during get watching products info", 2, False)
-            sendMessage("Error info \n" + str(e), 2, True)
+            sendMessage("### Error occur during get watching products info", 2, "Error")
+            sendMessage("Error info \n" + str(e), 2, "Error")
             reCreateWebObj()
 
         time.sleep(random.randrange(30,60))
