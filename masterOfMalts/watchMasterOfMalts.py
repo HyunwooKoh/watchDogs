@@ -57,6 +57,7 @@ class watchItem:
 class productInfo:
     prodId: int
     prodName: str
+    prodPrice : int
 
 # ----- Web Obect Control ----- #
 def createWebObj():
@@ -124,9 +125,10 @@ def refreshAndGetNewProductIds():
         if ("productIDs" in data):
             prodIds = data['productIDs']
             prodNames = data['productNames']
+            prodPrices = data['productPrices']
             idString = ','.join(map(str, prodIds))
             for i in range(0, len(prodIds)):
-                prodinfo.append(productInfo(prodIds[i], prodNames[i]))
+                prodinfo.append(productInfo(prodIds[i], prodNames[i], prodPrices[i]))
             break
     logging.info("refreshed idString : " + idString)    
     return idString, prodinfo
@@ -241,7 +243,7 @@ def sendNewProductInfos(newProdInfos):
                 isNew = False
                 break
         if (isNew):
-            newProductListMsg += "\n- " + info.prodName
+            newProductListMsg += "\n- name: " + newInfo.prodName + ", price : " + str(newInfo.prodPrice) + "(InclTax)"
 
     sendMessage(newProductListMsg, 2, "Notice")
             
@@ -318,6 +320,8 @@ def addWatchItem():
         "m_watchList": str(m_watchList),
         "m_watchItems": str(m_watchItems)
     }
+    
+    sendMessage("ADD watch List Item by API, item : " + params['name'])
     return jsonify(response)
 
 
@@ -361,6 +365,7 @@ if __name__ == "__main__":
             if (m_lastNewProductIDs != idString) :
                 sendNewProductInfos(newProdInfos)
                 m_lastNewProductIDs = idString
+                m_lastNewProductInfos = newProdInfos
                 jsonString = getProductInfoes(idString)
                 if len(jsonString) == 0 :
                     continue
