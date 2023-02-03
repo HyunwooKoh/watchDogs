@@ -220,7 +220,7 @@ def sendMessage(text, sendCount, channelType):
     elif channelType == "Personal":
         channel = config['slack']['personalChannel']
     elif channelType == "Error":
-        channel = config['slack']['Error']
+        channel = config['slack']['ErrorChannel']
     
     try:
         slackHeaders = {"Authorization": "Bearer "+ config['slack']['token']}
@@ -351,7 +351,7 @@ if __name__ == "__main__":
     schedule.every().day.at(config['etc']['resetTime']).do(resetDatas)
     schedule.run_pending()
     
-    apiThread = Thread(runApiServer)
+    apiThread = Thread(target=runApiServer)
     apiThread.start()
 
     while True:
