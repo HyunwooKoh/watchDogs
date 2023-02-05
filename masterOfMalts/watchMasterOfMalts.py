@@ -30,7 +30,7 @@ logging.basicConfig(filename="masterOfMalts.log", level=logging.INFO)
 m_lastNewProductIDs = ""
 m_lastNewProductInfos = []
 m_sentList = []
-
+bootEvent = True
 
 # ------ Error Code ------- #
 INVALID_WATCH_TARGET = -100
@@ -363,7 +363,10 @@ if __name__ == "__main__":
         try:
             idString, newProdInfos = refreshAndGetNewProductIds()
             if (m_lastNewProductIDs != idString) :
-                sendNewProductInfos(newProdInfos)
+                if not bootEvent:
+                    sendNewProductInfos(newProdInfos)
+                else:
+                    bootEvent = False
                 m_lastNewProductIDs = idString
                 m_lastNewProductInfos = newProdInfos
                 jsonString = getProductInfoes(idString)
