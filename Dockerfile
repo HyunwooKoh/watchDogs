@@ -20,7 +20,9 @@ RUN yum install Xvfb -y
 WORKDIR ${HOME}
 ADD ./requirements.txt ./
 ADD ./chromedriver ./chromedriver 
-ADD ./start_services.sh ./
+ADD ./startServices.sh ./
+RUN chmod +x ./chromedriver
+RUN chmod +x ./startServices.sh
 COPY ./masterOfMalts ./masterOfMalts
 
 ENV GOOGLE_CHROME_VERSION=94.0.4606.54
@@ -30,3 +32,6 @@ RUN yum install -y https://dl.google.com/linux/chrome/rpm/stable/x86_64/google-c
 
 ENV DISPLAY=:6501
 RUN Xvfb :6501 &
+
+#TODO: remove it and set in docker-compose.yml
+ENV watchTarget=masterofmalts

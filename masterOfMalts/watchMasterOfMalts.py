@@ -158,7 +158,7 @@ def getProductInfoes(idString):
 # ----- Data Parsing ----- #
 def parseNewProductKeys():
     global m_newItmeKeys 
-    m_newItmeKeys = config['newProducts']['names'].split('&')
+    m_newItmeKeys = str(config['newProducts']['names']).split('&')
     logging.info("watching New Product List : " + str(m_newItmeKeys))
 
 
