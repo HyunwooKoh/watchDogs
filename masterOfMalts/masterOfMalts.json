@@ -47,5 +47,21 @@
         "name": "롱로우18",
         "code": "9976",
         "autoCheckOut" : true
+    },{
+        "name": "로발2023",
+        "code": "124917",
+        "autoCheckOut" : true
+    },{
+        "name": "햅번12쉐리",
+        "code": "124918",
+        "autoCheckOut" : true
+    },{
+        "name": "킬커란8CS 쉐리-2023",
+        "code": "124920",
+        "autoCheckOut" : true
+    },{
+        "name": "킬커란8CS 버번-2023",
+        "code": "124919",
+        "autoCheckOut" : true
     }]
 }
