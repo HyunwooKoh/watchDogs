@@ -85,6 +85,7 @@ def reCreateWebObj():
     time.sleep(600)
     webObjInit()
     sendMessage('### reopen webPage ###', 2, "Notice")
+    bootEvent = True
     
 
 def login():
@@ -194,23 +195,27 @@ def parseWachingListProducts():
     print(m_watchItems)
 
 
-def checkProductInfoes(jsonString):
+def checkNewProductInfoes(newProdInfos : productInfo):
+    for prod in newProdInfos:        
+        if prod.prodId not in m_sentList:
+            if str(prod.prodId) in m_lastNewProductIDs:
+                for key in m_newItmeKeys :
+                    if (key in prod.prodName):
+                        sendStockAlarm(False, prod.prodName, prod.prodId)
+
+
+def checkWatchingProductInfoes(jsonString : str):
     jsonData = json.loads(jsonString)
     products = jsonData['products']
     for item in products:
-        prodId = str(item['productID'])
+        prodId = int(item['productID'])
         prodName = item['name'].lower()
         avab =  item['available']     
         
         if avab == True and prodId not in m_sentList:
-            if prodId in m_lastNewProductIDs:
-                for key in m_newItmeKeys :
-                    if (key in prodName):
-                        sendStockAlarm(False, prodName, prodId)
-            else:
-                if isSwitchOn(prodId) :
-                    checkOutTheItem(prodId)
-                sendStockAlarm(True, prodName, prodId)
+            if isSwitchOn(prodId) :
+                checkOutTheItem(prodId)
+            sendStockAlarm(True, prodName, prodId)
 
 
 # ----- Utills  ----- #
@@ -249,7 +254,7 @@ def sendNewProductInfos(newProdInfos):
             
 
 
-def sendStockAlarm(reStock, name, prodId):
+def sendStockAlarm(reStock : bool, name : str, prodId : int):
     logging.info("checkOutTheItem item : " + str(prodId))
     if reStock:
         text = "###### Re-Stock ######\n"
@@ -276,12 +281,12 @@ def isSwitchOn(targetId) :
     return False
 
 
-def checkOutTheItem(prodId) :
+def checkOutTheItem(prodId : int) :
     totalCount = m_driver.execute_script('var total = getBasketQuantityTotal(); return total')
     logging.info('check out , totalCount : ' + str(totalCount))
     if totalCount == 0 and m_userInfoes[0].checkoutAvailable :
-        logging.info("checkOutTheItem item : " + prodId)
-        m_driver.execute_script('AddToBasket(' + prodId + ')') 
+        logging.info("checkOutTheItem item : " + str(prodId))
+        m_driver.execute_script('AddToBasket(' + str(prodId) + ')') 
         m_driver.get(CHECKOUT_ADDRESS)
         time.sleep(3)
         
@@ -369,11 +374,8 @@ if __name__ == "__main__":
                     bootEvent = False
                 m_lastNewProductIDs = idString
                 m_lastNewProductInfos = newProdInfos
-                jsonString = getProductInfoes(idString)
-                if len(jsonString) == 0 :
-                    continue
                 logging.info('New Product IDs : ' + idString + '\n')
-                checkProductInfoes(jsonString)                
+                checkNewProductInfoes(newProdInfos)            
         except Exception as e:
                 sendMessage("### Error occur during get New Products info", 2, "Error")
                 sendMessage("Error info \n" + str(e), 2, "Error")
@@ -383,7 +385,7 @@ if __name__ == "__main__":
             jsonString = getProductInfoes(m_watchList)
             if len(jsonString) == 0 :
                     continue
-            checkProductInfoes(jsonString)
+            checkWatchingProductInfoes(jsonString)
         except Exception as e:
             sendMessage("### Error occur during get watching products info", 2, "Error")
             sendMessage("Error info \n" + str(e), 2, "Error")
