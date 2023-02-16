@@ -23,7 +23,6 @@ ADD ./chromedriver ./chromedriver
 ADD ./startServices.sh ./
 RUN chmod +x ./chromedriver
 RUN chmod +x ./startServices.sh
-COPY ./masterOfMalts ./masterOfMalts
 
 ENV GOOGLE_CHROME_VERSION=94.0.4606.54
 RUN pip3 install -r requirements.txt
@@ -34,4 +33,5 @@ ENV DISPLAY=:6501
 RUN Xvfb :6501 &
 
 #TODO: remove it and set in docker-compose.yml
+COPY ./masterOfMalts ./masterOfMalts
 ENV watchTarget=masterofmalts
