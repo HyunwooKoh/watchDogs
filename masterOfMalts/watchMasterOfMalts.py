@@ -276,7 +276,7 @@ def resetDatas():
 
 def isSwitchOn(targetId) :
     for item in m_watchItems:
-        if item.prodId == targetId :
+        if item.prodId == str(targetId) :
             return item.autoCheckOut
     return False
 
@@ -287,6 +287,8 @@ def checkOutTheItem(prodId : int) :
     if totalCount == 0 and m_userInfoes[0].checkoutAvailable :
         logging.info("checkOutTheItem item : " + str(prodId))
         m_driver.execute_script('AddToBasket(' + str(prodId) + ')') 
+        logging.info("Add itme, item : " + str(prodId))
+        time.sleep(1)
         m_driver.get(CHECKOUT_ADDRESS)
         time.sleep(3)
         
@@ -305,6 +307,7 @@ def checkOutTheItem(prodId : int) :
 
         sendMessage("##### checkout tried ##### ", 5, "Personal")
         m_userInfoes[0].checkoutAvailable = False
+        logging.info("Successfully auto-checkout item, code : " + str(prodId))
     else :
         text = "###### watch List re-stock, but just add to basket ######\n"
         text = text + ""
