@@ -26,8 +26,9 @@ RUN chmod +x ./startServices.sh
 
 ENV GOOGLE_CHROME_VERSION=94.0.4606.54
 RUN pip3 install -r requirements.txt
-RUN yum install -y https://dl.google.com/linux/chrome/rpm/stable/x86_64/google-chrome-stable-${GOOGLE_CHROME_VERSION}-1.x86_64.rpm
+RUN yum update -y
 
+RUN yum install -y https://dl.google.com/linux/chrome/rpm/stable/x86_64/google-chrome-stable-${GOOGLE_CHROME_VERSION}-1.x86_64.rpm
 
 ENV DISPLAY=:6501
 RUN Xvfb :6501 &
