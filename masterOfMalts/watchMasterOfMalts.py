@@ -15,7 +15,17 @@ from datetime import date
 from datetime import datetime
 from flask import Flask, request, jsonify
 
-HEADERS = {'Content-Type':'application/json','User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36'}
+HEADERS = {'Content-Type':'application/json',
+'scheme': 'https',
+'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36',
+'sec-ch-ua': '\"Chromium\";v=\"110\", \"Not A(Brand\";v=\"24\", \"Google Chrome\";v=\"110\"',
+'sec-ch-ua-mobile' : '?0',
+'sec-ch-ua-platform': '\"Windows\"',
+'sec-fetch-dest' : 'empty',
+'sec-fetch-mode' : 'cors',
+'sec-fetch-site' : 'same-origin'
+}
+
 NEW_ARRIVAL_ADDRESS = "https://www.masterofmalt.com/new-arrivals/whisky-new-arrivals/"
 TRACKING_ADDRESS = "https://www.masterofmalt.com/api/data/productstracking/"
 CHECKOUT_ADDRESS = "https://www.masterofmalt.com/checkout/address/"
@@ -82,7 +92,7 @@ def webObjInit():
 def reCreateWebObj():
     m_driver.close()
     sendMessage('### Sleep 10 Min to reopen webPage ###', 2, "Notice")
-    time.sleep(600)
+    time.sleep(300)
     webObjInit()
     sendMessage('### reopen webPage ###', 2, "Notice")
     bootEvent = True
@@ -144,6 +154,9 @@ def getProductInfoes(idString):
             sendMessage('API Blocked', 2, "Notice")
         elif '520' in str(r):
             sendMessage('520 Error, skip this try\n' + str(r), 2, "Error")
+            return ""
+        elif 'OSError' in str(r):
+            sendMessage('OSError, skip this try\n' + str(r), 2, "Error")
             return ""
         else:
             sendMessage('Unknown Error occurred!\n' + str(r), 2, "Error")
@@ -394,4 +407,4 @@ if __name__ == "__main__":
             sendMessage("Error info \n" + str(e), 2, "Error")
             reCreateWebObj()
 
-        time.sleep(random.randrange(30,60))
+        time.sleep(random.randrange(20,60))
