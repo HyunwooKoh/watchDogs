@@ -148,6 +148,8 @@ def refreshAndGetNewProductIds():
 def getProductInfoes(idString):
     try:
         r = requests.get(TRACKING_ADDRESS + idString, headers=HEADERS)
+        if r is None:
+            return ""
         ret = json.loads(r.content)
         retString = str(r.content)
         retString = retString.replace("\\","")
