@@ -146,8 +146,8 @@ def refreshAndGetNewProductIds():
 
 
 def getProductInfoes(idString):
-    r = requests.get(TRACKING_ADDRESS + idString, headers=HEADERS)
     try:
+        r = requests.get(TRACKING_ADDRESS + idString, headers=HEADERS)
         ret = json.loads(r.content)
     except:
         if '403' in str(r):
@@ -156,6 +156,9 @@ def getProductInfoes(idString):
             sendMessage('520 Error, skip this try\n' + str(r), 2, "Error")
             return ""
         elif 'OSError' in str(r):
+            sendMessage('OSError, skip this try\n' + str(r), 2, "Error")
+            return ""
+        elif 'Connection timed out' in str(r):
             sendMessage('OSError, skip this try\n' + str(r), 2, "Error")
             return ""
         else:
