@@ -146,33 +146,24 @@ def refreshAndGetNewProductIds():
 
 
 def getProductInfoes(idString):
+    r = requests.get(TRACKING_ADDRESS + idString, headers=HEADERS)
     try:
-        r = requests.get(TRACKING_ADDRESS + idString, headers=HEADERS)
-        if r is None:
-            return ""
         ret = json.loads(r.content)
-        retString = str(r.content)
-        retString = retString.replace("\\","")
-        retString = retString.replace("'","")
-        retString = retString[1:]
-        logging.info("proDuct info : " + retString)
-        return retString
     except:
         if '403' in str(r):
             sendMessage('API Blocked', 2, "Notice")
-            return "Error"
         elif '520' in str(r):
             sendMessage('520 Error, skip this try\n' + str(r), 2, "Error")
             return ""
-        elif 'OSError' in str(r):
-            sendMessage('OSError, skip this try\n' + str(r), 2, "Error")
-            return ""
-        elif 'Connection timed out' in str(r):
-            sendMessage('OSError, skip this try\n' + str(r), 2, "Error")
-            return ""
         else:
             sendMessage('Unknown Error occurred!\n' + str(r), 2, "Error")
-            return "Error"
+        return
+    retString = str(r.content)
+    retString = retString.replace("\\","")
+    retString = retString.replace("'","")
+    retString = retString[1:]
+    logging.info("proDuct info : " + retString)
+    return retString
 
 
 # ----- Data Parsing ----- #
@@ -407,13 +398,17 @@ if __name__ == "__main__":
             jsonString = getProductInfoes(m_watchList)
             if len(jsonString) == 0 :
                     continue
-            elif jsonString == "Error" :
+            checkWatchingProductInfoes(jsonString)
+        except Exception as e:
+            if 'OSError' in str(e):
+                sendMessage('OSError, skip this try\n' + str(e), 2, "Error")
+                time.sleep(30)
+            elif 'Connection timed out' in str(e):
+                sendMessage('Connection timed out error, skip this try\n' + str(e), 2, "Error")
+                time.sleep(30)
+            else :
                 sendMessage("### Error occur during get watching products info", 2, "Error")
                 sendMessage("Error info \n" + str(e), 2, "Error")
                 reCreateWebObj()
-            checkWatchingProductInfoes(jsonString)
-        except Exception as e:
-            sendMessage("### someError occur during get watching products info", 2, "Error")
-            sendMessage("Error info \n" + str(e), 2, "Error")
-            reCreateWebObj()
+
         time.sleep(random.randrange(20,60))
