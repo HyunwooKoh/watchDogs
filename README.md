@@ -32,4 +32,4 @@ watchingSpan=300
 ```
 3. run the service
 ``` shell
-~$ sudo docker run -it watchDogs /home/watchDogs/masterOfMalts/watchMasterOfMalts.py
+~$ sudo docker run -it watchDogs /home/watchDogs/startServices.sh
